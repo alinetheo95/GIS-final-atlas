@@ -1,9 +1,11 @@
+// tree coverage
+
 // Initialize the map
 const map = new maplibregl.Map({
     container: 'map',
     style: 'style.json',
     center: [-73.935242, 40.730610],
-    zoom: 13
+    zoom: 11
 });
 
 // Add navigation controls

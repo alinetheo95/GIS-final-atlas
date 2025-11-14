@@ -5,27 +5,78 @@
         <link rel="stylesheet" href="style.css" />
         <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
         <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet">
+        <script src='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js'></script>
+        <link href='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css' rel='stylesheet' />
         
     </head>
     <body>
     <main class="container">
-        </section>
+        </section> 
         <header class="title-section">
-        <h1>ATLAS</h1>
+        <h1>URBAN MYCELIUM</h1>
         </header>
 
-        <div class="subtitle-section">
+        <div class="header-section">
             <p>GIS for Design Practices GSAPP Fall 2025</p>
         </div>
+
+        <div class="subtitle-section">
+            <p>Urban Density</p>
+        </div>
+
+        <div class="text-section">
+            <p>New York City has a poulation density of approximately 29,303 people per square mile, making it the densest city in the world.</p>
+        </div>
+
+        <div class="subtitle-section">
+            <p>Impervious Surfaces</p>
+        </div>
+
+        <div class="text-section">
+            <p>In addition to being the most densely populated country in the world, more than half of New York City's surfaces are impervious.</p>
+            <p>Impervious surfaces increase flooding by preventing rainwater from soaking into the ground, they cause pollution by channeling run off into waterways, and they contribute to the urban heat island effect by absorbing and retaining heat.</p>
+            <p>63% of Manhattan's surfaces are impervious. </p>
+        </div>
+
+        <!--impervious surfaces-->
+        <div id="map4"></div>
+
+        <!--3D Buildings-->
+        <div id="map5"></div> 
+
+        <div class="subtitle-section">
+            <p>Ecological History of NYC</p>
+        </div>
+
+        <div class="text-section">
+            <p>New York City wasn't always a concrete jungle, it had a lot of naturally occuring dense vegetation in 1782.</p>
+        </div>
+
+        <!--Historical ecology-->
+        <div id="map2"></div>
+
+        <div class="subtitle-section">
+            <p>The Hidden Network</p>
+        </div>
+
+        <div class="text-section">
+            <p>Explanation of the hidden network: mycelium networks in natural forests, wood wide web, how it could benefit a dense urban landscape</p>
+        </div>
         
-        <div id="map"></div>
+        <!--tree coverage-->
         <div id="map"></div>
 
+        <!--park spaces-->
+        <div id="map3"></div>
+        
     
 
 
     
 <!--Link to JS-->
         <script src="map.js"></script>
-        <script src="map-georef.js"></script>
+        <script src="map2.js"></script>
+        <script src="map3.js"></script>
+        <script src="map4.js"></script>
+        <script src="map5.js"></script>
     </body>
