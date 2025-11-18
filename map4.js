@@ -1,4 +1,4 @@
-//impervious surfaces
+//impervious surfaces + land cover
 
 // Initialize map 4
 const map4 = new maplibregl.Map({
@@ -13,9 +13,30 @@ map4.addControl(new maplibregl.NavigationControl(), 'top-left');
 
 // Wait for map to fully load
 map4.on('load', () => {
-    console.log('Map loaded, fetching building footprints...');
+    console.log('Map loaded, adding land cover raster...');
     
-    // Fetch building footprints in GeoJSON format (limit to 5000 for performance)
+    // Add the GeoTIFF as a raster source
+    map4.addSource('land-cover', {
+        type: 'raster',
+        url: 'landsat.tif', // Path to your GeoTIFF file
+        tileSize: 256
+    });
+    
+    console.log('Land cover source added');
+
+    // Add raster layer with color mapping for land cover classes
+    map4.addLayer({
+        id: 'land-cover-layer',
+        type: 'raster',
+        source: 'land-cover',
+        paint: {
+            'raster-opacity': 0.7
+        }
+    });
+    
+    console.log('Land cover layer added');
+
+    // Keep your existing building footprints code
     fetch('https://data.cityofnewyork.us/resource/5zhs-2jue.geojson?$limit=5000')
         .then(response => {
             console.log('Response status:', response.status);
@@ -27,7 +48,6 @@ map4.on('load', () => {
         .then(geojsonData => {
             console.log('Building data loaded! Number of buildings:', geojsonData.features.length);
             
-            // Add the source with the GeoJSON data
             map4.addSource('nyc-buildings', {
                 type: 'geojson',
                 data: geojsonData
@@ -35,7 +55,6 @@ map4.on('load', () => {
             
             console.log('Source added');
 
-            // Add the fill layer for building footprints
             map4.addLayer({
                 id: 'nyc-buildings-fill',
                 type: 'fill',
@@ -46,7 +65,6 @@ map4.on('load', () => {
                 }
             });
 
-            // Add outline layer
             map4.addLayer({
                 id: 'nyc-buildings-outline',
                 type: 'line',
@@ -57,15 +75,13 @@ map4.on('load', () => {
                 }
             });
             
-            console.log('Layers added - you should now see building footprints on the map!');
+            console.log('Layers added');
 
-            // Create popup instance
             const popup = new maplibregl.Popup({
                 closeButton: true,
                 closeOnClick: true
             });
 
-            // Add click event listener
             map4.on('click', 'nyc-buildings-fill', (e) => {
                 if (e.features.length > 0) {
                     const properties = e.features[0].properties;
@@ -86,7 +102,6 @@ map4.on('load', () => {
                 }
             });
 
-            // Change cursor on hover
             map4.on('mouseenter', 'nyc-buildings-fill', () => {
                 map4.getCanvas().style.cursor = 'pointer';
             });
@@ -95,14 +110,24 @@ map4.on('load', () => {
                 map4.getCanvas().style.cursor = '';
             });
 
-            // Layer toggle functionality
+            // Layer toggle for buildings
             const toggleCheckbox = document.getElementById('layer-toggle-buildings');
             if (toggleCheckbox) {
                 toggleCheckbox.addEventListener('change', (e) => {
                     const visibility = e.target.checked ? 'visible' : 'none';
                     map4.setLayoutProperty('nyc-buildings-fill', 'visibility', visibility);
                     map4.setLayoutProperty('nyc-buildings-outline', 'visibility', visibility);
-                    console.log('Layer visibility:', visibility);
+                    console.log('Buildings visibility:', visibility);
+                });
+            }
+
+            // Layer toggle for land cover
+            const landCoverToggle = document.getElementById('layer-toggle-landcover');
+            if (landCoverToggle) {
+                landCoverToggle.addEventListener('change', (e) => {
+                    const visibility = e.target.checked ? 'visible' : 'none';
+                    map4.setLayoutProperty('land-cover-layer', 'visibility', visibility);
+                    console.log('Land cover visibility:', visibility);
                 });
             }
         })
@@ -111,7 +136,6 @@ map4.on('load', () => {
         });
 });
 
-// Error handling
 map4.on('error', (e) => {
     console.error('Map error:', e);
 });

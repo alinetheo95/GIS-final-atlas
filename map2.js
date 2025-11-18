@@ -63,7 +63,6 @@ map2.on('load', () => {
                 paint: {
                     'fill-color': '#77c049',
                     'fill-opacity': 0.5,
-                    'fill-outline-color': '#ffffff'
                 }
             });
             

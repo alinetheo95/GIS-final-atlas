@@ -1,22 +1,22 @@
-// wetlands
+// streams 
 
 // Initialize the map
-const map3 = new maplibregl.Map({
-    container: 'map3',
+const map7 = new maplibregl.Map({
+    container: 'map7',
     style: 'style.json',
     center: [-73.952778, 40.798120],
     zoom: 11
 });
 
 // Add navigation controls
-map3.addControl(new maplibregl.NavigationControl(), 'top-left');
+map7.addControl(new maplibregl.NavigationControl(), 'top-left');
 
 // Wait for map to fully load
-map3.on('load', () => {
+map7.on('load', () => {
     console.log('Map 7 loaded');
     
     // Load your GeoJSON file
-    fetch('wetlands-webmap.geojson')
+    fetch('streams-webmap.geojson')
         .then(response => response.json())
         .then(data => {
             console.log('Data loaded:', data);
@@ -26,19 +26,19 @@ map3.on('load', () => {
             console.log('Total features:', data.features.length);
             
             // Add source
-            map3.addSource('georef-export', {
+            map7.addSource('georef-export', {
                 type: 'geojson',
                 data: data
             });
             
-            // Add polygon layer
-            map3.addLayer({
+            // Add line layer
+            map7.addLayer({
                 id: 'georef-export-layer',
-                type: 'fill',
+                type: 'line',
                 source: 'georef-export',
                 paint: {
-                    'fill-color': '#67c5ac',
-                    'fill-opacity': 0.6
+                    'line-color': '#25baed',
+                    'line-width': 1.5
                 }
             });
             
@@ -48,7 +48,7 @@ map3.on('load', () => {
                 closeOnClick: true
             });
             
-            map3.on('click', 'georef-export-layer', (e) => {
+            map7.on('click', 'georef-export-layer', (e) => {
                 if (e.features.length > 0) {
                     const properties = e.features[0].properties;
                     const coordinates = e.lngLat;
@@ -61,17 +61,17 @@ map3.on('load', () => {
                     
                     popup7.setLngLat(coordinates)
                         .setHTML(content)
-                        .addTo(map3);
+                        .addTo(map7);
                 }
             });
             
             // Cursor change on hover
-            map3.on('mouseenter', 'georef-export-layer', () => {
-                map3.getCanvas().style.cursor = 'pointer';
+            map7.on('mouseenter', 'georef-export-layer', () => {
+                map7.getCanvas().style.cursor = 'pointer';
             });
             
-            map3.on('mouseleave', 'georef-export-layer', () => {
-                map3.getCanvas().style.cursor = '';
+            map7.on('mouseleave', 'georef-export-layer', () => {
+                map7.getCanvas().style.cursor = '';
             });
             
             // Toggle functionality
@@ -79,7 +79,7 @@ map3.on('load', () => {
             if (toggleCheckbox7) {
                 toggleCheckbox7.addEventListener('change', (e) => {
                     const visibility = e.target.checked ? 'visible' : 'none';
-                    map3.setLayoutProperty('georef-export-layer', 'visibility', visibility);
+                    map7.setLayoutProperty('georef-export-layer', 'visibility', visibility);
                 });
             }
             
@@ -90,6 +90,6 @@ map3.on('load', () => {
 });
 
 // Error handling
-map3.on('error', (e) => {
+map7.on('error', (e) => {
     console.error('Map 7 error:', e);
 });
