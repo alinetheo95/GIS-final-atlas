@@ -5,7 +5,7 @@ const map4 = new maplibregl.Map({
     container: 'map4',
     style: 'style.json',
     center: [-73.952778, 40.798120],
-    zoom: 11
+    zoom: 12
 });
 
 // Add navigation controls
@@ -22,8 +22,8 @@ map4.on('load', () => {
             'Tiles/{z}/{x}/{y}.png'  // Corrected path
         ],
         tileSize: 256,
-        minzoom: 10,
-        maxzoom: 11
+        minzoom: 12,
+        maxzoom: 14
     });
     
     // Add raster layer
