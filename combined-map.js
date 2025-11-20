@@ -19,60 +19,226 @@ map.on('load', async () => {
     console.log('Main map loaded, loading all layers...');
     
     try {
-        // ====== LAYER 1: Census Tracts (Historical Grid / Population Density) ======
-        console.log('Loading census tracts...');
-        const censusResponse = await fetch('https://services5.arcgis.com/GfwWNkhOj9bNBqoJ/arcgis/rest/services/NYC_Census_Tracts_for_2020_US_Census/FeatureServer/0/query?where=1=1&outFields=*&outSR=4326&f=pgeojson');
+        // ====== LAYER 1: Historical Grid Progression ======
+        console.log('Loading historical grid layers...');
         
-        if (!censusResponse.ok) {
-            throw new Error(`Census HTTP error! status: ${censusResponse.status}`);
-        }
+        // British Headquarters
+        const britishResponse = await fetch('british-headquarters.geojson');
+        const britishData = await britishResponse.json();
+        console.log('✅ British headquarters loaded:', britishData.features.length, 'features');
         
-        const censusData = await censusResponse.json();
-        console.log('✅ Census tract data loaded:', censusData.features.length, 'tracts');
-        
-        map.addSource('census-tracts', {
+        map.addSource('british-grid', {
             type: 'geojson',
-            data: censusData
+            data: britishData
         });
         
         map.addLayer({
-            id: 'census-tracts-fill',
+            id: 'british-grid-fill',
             type: 'fill',
-            source: 'census-tracts',
+            source: 'british-grid',
             paint: {
-                'fill-color': [
-                    'interpolate',
-                    ['linear'],
-                    ['get', 'PopDen'],
-                    0, '#ffffcc',
-                    50, '#ffeda0',
-                    100, '#fed976',
-                    200, '#feb24c',
-                    300, '#fd8d3c',
-                    400, '#fc4e2a',
-                    500, '#e31a1c',
-                    600, '#bd0026',
-                    700, '#800026'
-                ],
-                'fill-opacity': 0.7
+                'fill-color': '#8B4513',
+                'fill-opacity': 0.4
             },
             layout: {
-                'visibility': 'none' // Start hidden
+                'visibility': 'none'
             }
         });
         
         map.addLayer({
-            id: 'census-tracts-outline',
+            id: 'british-grid-outline',
             type: 'line',
-            source: 'census-tracts',
+            source: 'british-grid',
             paint: {
-                'line-color': '#ffffff',
-                'line-width': 1
+                'line-color': '#654321',
+                'line-width': 2
             },
             layout: {
-                'visibility': 'none' // Start hidden
+                'visibility': 'none'
             }
         });
+        
+        // 1811 Grid
+        const grid1811Response = await fetch('1811.geojson');
+        const grid1811Data = await grid1811Response.json();
+        console.log('✅ 1811 grid loaded:', grid1811Data.features.length, 'features');
+        
+        map.addSource('grid-1811', {
+            type: 'geojson',
+            data: grid1811Data
+        });
+        
+        map.addLayer({
+            id: 'grid-1811-fill',
+            type: 'fill',
+            source: 'grid-1811',
+            paint: {
+                'fill-color': '#e74c3c',
+                'fill-opacity': 0.4
+            },
+            layout: {
+                'visibility': 'none'
+            }
+        });
+        
+        map.addLayer({
+            id: 'grid-1811-outline',
+            type: 'line',
+            source: 'grid-1811',
+            paint: {
+                'line-color': '#c0392b',
+                'line-width': 2
+            },
+            layout: {
+                'visibility': 'none'
+            }
+        });
+        
+        // 1840 Grid
+        const grid1840Response = await fetch('1840.geojson');
+        const grid1840Data = await grid1840Response.json();
+        console.log('✅ 1840 grid loaded:', grid1840Data.features.length, 'features');
+        
+        map.addSource('grid-1840', {
+            type: 'geojson',
+            data: grid1840Data
+        });
+        
+        map.addLayer({
+            id: 'grid-1840-fill',
+            type: 'fill',
+            source: 'grid-1840',
+            paint: {
+                'fill-color': '#e67e22',
+                'fill-opacity': 0.4
+            },
+            layout: {
+                'visibility': 'none'
+            }
+        });
+        
+        map.addLayer({
+            id: 'grid-1840-outline',
+            type: 'line',
+            source: 'grid-1840',
+            paint: {
+                'line-color': '#d35400',
+                'line-width': 2
+            },
+            layout: {
+                'visibility': 'none'
+            }
+        });
+        
+        // 1870 Grid
+        const grid1870Response = await fetch('1870.geojson');
+        const grid1870Data = await grid1870Response.json();
+        console.log('✅ 1870 grid loaded:', grid1870Data.features.length, 'features');
+        
+        map.addSource('grid-1870', {
+            type: 'geojson',
+            data: grid1870Data
+        });
+        
+        map.addLayer({
+            id: 'grid-1870-fill',
+            type: 'fill',
+            source: 'grid-1870',
+            paint: {
+                'fill-color': '#f39c12',
+                'fill-opacity': 0.4
+            },
+            layout: {
+                'visibility': 'none'
+            }
+        });
+        
+        map.addLayer({
+            id: 'grid-1870-outline',
+            type: 'line',
+            source: 'grid-1870',
+            paint: {
+                'line-color': '#e67e22',
+                'line-width': 2
+            },
+            layout: {
+                'visibility': 'none'
+            }
+        });
+        
+        // 1900 Grid
+        const grid1900Response = await fetch('1900.geojson');
+        const grid1900Data = await grid1900Response.json();
+        console.log('✅ 1900 grid loaded:', grid1900Data.features.length, 'features');
+        
+        map.addSource('grid-1900', {
+            type: 'geojson',
+            data: grid1900Data
+        });
+        
+        map.addLayer({
+            id: 'grid-1900-fill',
+            type: 'fill',
+            source: 'grid-1900',
+            paint: {
+                'fill-color': '#f1c40f',
+                'fill-opacity': 0.4
+            },
+            layout: {
+                'visibility': 'none'
+            }
+        });
+        
+        map.addLayer({
+            id: 'grid-1900-outline',
+            type: 'line',
+            source: 'grid-1900',
+            paint: {
+                'line-color': '#f39c12',
+                'line-width': 2
+            },
+            layout: {
+                'visibility': 'none'
+            }
+        });
+        
+        // Complete Grid
+        const completeGridResponse = await fetch('complete-grid.geojson');
+        const completeGridData = await completeGridResponse.json();
+        console.log('✅ Complete grid loaded:', completeGridData.features.length, 'features');
+        
+        map.addSource('complete-grid', {
+            type: 'geojson',
+            data: completeGridData
+        });
+        
+        map.addLayer({
+            id: 'complete-grid-fill',
+            type: 'fill',
+            source: 'complete-grid',
+            paint: {
+                'fill-color': '#3498db',
+                'fill-opacity': 0.3
+            },
+            layout: {
+                'visibility': 'none'
+            }
+        });
+        
+        map.addLayer({
+            id: 'complete-grid-outline',
+            type: 'line',
+            source: 'complete-grid',
+            paint: {
+                'line-color': '#2980b9',
+                'line-width': 1.5
+            },
+            layout: {
+                'visibility': 'none'
+            }
+        });
+        
+        console.log('✅ All historical grid layers loaded');
         
         // ====== LAYER 2: Impervious Surfaces (Building Tiles) ======
         console.log('Loading impervious surfaces...');
@@ -81,7 +247,7 @@ map.on('load', async () => {
             type: 'raster',
             tiles: ['Tiles/{z}/{x}/{y}.png'],
             tileSize: 256,
-            minzoom: 12,
+            minzoom: 10,
             maxzoom: 14
         });
         
@@ -93,7 +259,7 @@ map.on('load', async () => {
                 'raster-opacity': 0.8
             },
             layout: {
-                'visibility': 'none' // Start hidden
+                'visibility': 'none'
             }
         });
         
@@ -119,7 +285,7 @@ map.on('load', async () => {
                 'fill-opacity': 0.5
             },
             layout: {
-                'visibility': 'none' // Start hidden
+                'visibility': 'none'
             }
         });
         
@@ -143,7 +309,7 @@ map.on('load', async () => {
                 'line-width': 2
             },
             layout: {
-                'visibility': 'none' // Start hidden
+                'visibility': 'none'
             }
         });
         
@@ -167,13 +333,13 @@ map.on('load', async () => {
                 'fill-opacity': 0.6
             },
             layout: {
-                'visibility': 'none' // Start hidden
+                'visibility': 'none'
             }
         });
         
         // ====== LAYER 6: Tree Coverage ======
         console.log('Loading tree coverage...');
-        const treeResponse = await fetch('https://data.cityofnewyork.us/resource/hn5i-inap.json?$limit=500000');
+        const treeResponse = await fetch('https://data.cityofnewyork.us/resource/hn5i-inap.json?$limit=100000');
         const treeData = await treeResponse.json();
         console.log('✅ Tree data loaded:', treeData.length, 'trees');
         
@@ -219,7 +385,7 @@ map.on('load', async () => {
                 'circle-opacity': 0.8
             },
             layout: {
-                'visibility': 'none' // Start hidden
+                'visibility': 'none'
             }
         });
         
@@ -227,24 +393,32 @@ map.on('load', async () => {
         
         // ====== INTERACTIONS ======
         
-        // Popup for census tracts
-        const censusPopup = new maplibregl.Popup({
+        // Generic popup for all grid layers
+        const gridPopup = new maplibregl.Popup({
             closeButton: true,
             closeOnClick: true
         });
         
-        map.on('click', 'census-tracts-fill', (e) => {
-            if (e.features.length > 0) {
-                const properties = e.features[0].properties;
-                const content = `
-                    <h5>Census Tract Info</h5>
-                    <p><strong>Tract:</strong> ${properties.BoroCT2020 || properties.CT2020 || 'N/A'}</p>
-                    <p><strong>Borough:</strong> ${properties.BoroName || 'N/A'}</p>
-                    <p><strong>Population:</strong> ${properties.Pop_2020 ? properties.Pop_2020.toLocaleString() : 'N/A'}</p>
-                    <p><strong>Population Density:</strong> ${properties.PopDen ? properties.PopDen.toFixed(2) + ' per sq mi' : 'N/A'}</p>
-                `;
-                censusPopup.setLngLat(e.lngLat).setHTML(content).addTo(map);
-            }
+        const gridLayers = [
+            'british-grid-fill',
+            'grid-1811-fill',
+            'grid-1840-fill',
+            'grid-1870-fill',
+            'grid-1900-fill',
+            'complete-grid-fill'
+        ];
+        
+        gridLayers.forEach(layerId => {
+            map.on('click', layerId, (e) => {
+                if (e.features.length > 0) {
+                    const properties = e.features[0].properties;
+                    let content = '<h5>Grid Info</h5>';
+                    for (let key in properties) {
+                        content += `<p><strong>${key}:</strong> ${properties[key]}</p>`;
+                    }
+                    gridPopup.setLngLat(e.lngLat).setHTML(content).addTo(map);
+                }
+            });
         });
         
         // Popup for trees
@@ -318,7 +492,15 @@ map.on('load', async () => {
         });
         
         // Cursor changes on hover
-        ['census-tracts-fill', 'trees-layer', 'historical-ecology-layer', 'streams-layer', 'wetlands-layer'].forEach(layerId => {
+        const allInteractiveLayers = [
+            ...gridLayers,
+            'trees-layer',
+            'historical-ecology-layer',
+            'streams-layer',
+            'wetlands-layer'
+        ];
+        
+        allInteractiveLayers.forEach(layerId => {
             map.on('mouseenter', layerId, () => {
                 map.getCanvas().style.cursor = 'pointer';
             });

@@ -10,33 +10,34 @@
     
     console.log('Scrollytelling initialized');
     
-    // Define narrative steps following your order
+    // Helper function to hide all grid layers
+    function hideAllGridLayers() {
+        return {
+            'british-grid-fill': 'none',
+            'british-grid-outline': 'none',
+            'grid-1811-fill': 'none',
+            'grid-1811-outline': 'none',
+            'grid-1840-fill': 'none',
+            'grid-1840-outline': 'none',
+            'grid-1870-fill': 'none',
+            'grid-1870-outline': 'none',
+            'grid-1900-fill': 'none',
+            'grid-1900-outline': 'none',
+            'complete-grid-fill': 'none',
+            'complete-grid-outline': 'none'
+        };
+    }
+    
+    // Define narrative steps following your storyboard
     const steps = {
+        // INTRO
         'intro': {
             center: [-73.935242, 40.730610],
-            zoom: 10.5,
-            pitch: 0,
-            bearing: 0,
-            layers: {
-                'census-tracts-fill': 'none',
-                'census-tracts-outline': 'none',
-                'building-tiles-layer': 'none',
-                'historical-ecology-layer': 'none',
-                'streams-layer': 'none',
-                'wetlands-layer': 'none',
-                'trees-layer': 'none'
-            }
-        },
-        
-        // STEP 1: Historical Grid
-        'historical-grid': {
-            center: [-73.935242, 40.730610],
             zoom: 11,
             pitch: 0,
             bearing: 0,
             layers: {
-                'census-tracts-fill': 'visible',
-                'census-tracts-outline': 'visible',
+                ...hideAllGridLayers(),
                 'building-tiles-layer': 'none',
                 'historical-ecology-layer': 'none',
                 'streams-layer': 'none',
@@ -45,14 +46,16 @@
             }
         },
         
-        'grid-detail': {
-            center: [-73.9712, 40.7831],
-            zoom: 12.5,
+        // HISTORICAL GRID - Feature 1: Complete Grid Overview
+        'urban-density': {
+            center: [-73.97, 40.76], // Centered on Manhattan
+            zoom: 11.5, // Zoomed in a bit more
             pitch: 0,
             bearing: 0,
             layers: {
-                'census-tracts-fill': 'visible',
-                'census-tracts-outline': 'visible',
+                ...hideAllGridLayers(),
+                'complete-grid-fill': 'visible',
+                'complete-grid-outline': 'visible',
                 'building-tiles-layer': 'none',
                 'historical-ecology-layer': 'none',
                 'streams-layer': 'none',
@@ -61,32 +64,17 @@
             }
         },
         
-        // STEP 2: Impervious Surfaces
-        'impervious-intro': {
-            center: [-73.952778, 40.798120],
-            zoom: 13,
-            pitch: 0,
-            bearing: 0,
-            layers: {
-                'census-tracts-fill': 'visible',
-                'census-tracts-outline': 'visible',
-                'building-tiles-layer': 'visible',
-                'historical-ecology-layer': 'none',
-                'streams-layer': 'none',
-                'wetlands-layer': 'none',
-                'trees-layer': 'none'
-            }
-        },
-        
-        'impervious-detail': {
-            center: [-73.952778, 40.798120],
+        // HISTORICAL GRID - Feature 2: British Headquarters 1782
+        'british-1782': {
+            center: [-74.008, 40.715], // Moved north to show less water
             zoom: 14,
-            pitch: 45,
-            bearing: -17.6,
+            pitch: 0,
+            bearing: 0,
             layers: {
-                'census-tracts-fill': 'none',
-                'census-tracts-outline': 'none',
-                'building-tiles-layer': 'visible',
+                ...hideAllGridLayers(),
+                'british-grid-fill': 'none', // Removed fill
+                'british-grid-outline': 'visible', // Only outline
+                'building-tiles-layer': 'none',
                 'historical-ecology-layer': 'none',
                 'streams-layer': 'none',
                 'wetlands-layer': 'none',
@@ -94,173 +82,193 @@
             }
         },
         
-        // STEP 3: Historical Ecology
-        'historical-ecology': {
-            center: [-73.952778, 40.798120],
-            zoom: 12,
-            pitch: 0,
-            bearing: 0,
-            layers: {
-                'census-tracts-fill': 'none',
-                'census-tracts-outline': 'none',
-                'building-tiles-layer': 'none',
-                'historical-ecology-layer': 'visible',
-                'streams-layer': 'none',
-                'wetlands-layer': 'none',
-                'trees-layer': 'none'
-            }
-        },
-        
-        'ecology-comparison': {
-            center: [-73.952778, 40.798120],
-            zoom: 12,
-            pitch: 0,
-            bearing: 0,
-            layers: {
-                'census-tracts-fill': 'none',
-                'census-tracts-outline': 'none',
-                'building-tiles-layer': 'visible',
-                'historical-ecology-layer': 'visible',
-                'streams-layer': 'none',
-                'wetlands-layer': 'none',
-                'trees-layer': 'none'
-            },
-            paint: {
-                'historical-ecology-layer': {
-                    'fill-opacity': 0.7
-                }
-            }
-        },
-        
-        // STEP 4: Streams
-        'streams-intro': {
-            center: [-73.935242, 40.730610],
-            zoom: 11.5,
-            pitch: 0,
-            bearing: 0,
-            layers: {
-                'census-tracts-fill': 'none',
-                'census-tracts-outline': 'none',
-                'building-tiles-layer': 'none',
-                'historical-ecology-layer': 'visible',
-                'streams-layer': 'visible',
-                'wetlands-layer': 'none',
-                'trees-layer': 'none'
-            }
-        },
-        
-        'streams-detail': {
-            center: [-73.952778, 40.798120],
+        // HISTORICAL GRID - Feature 3: 1811 Grid
+        'grid-1811': {
+            center: [-73.99, 40.730],
             zoom: 13,
             pitch: 0,
             bearing: 0,
             layers: {
-                'census-tracts-fill': 'none',
-                'census-tracts-outline': 'none',
-                'building-tiles-layer': 'visible',
+                ...hideAllGridLayers(),
+                'grid-1811-fill': 'visible',
+                'grid-1811-outline': 'visible',
+                'building-tiles-layer': 'none',
                 'historical-ecology-layer': 'none',
-                'streams-layer': 'visible',
+                'streams-layer': 'none',
                 'wetlands-layer': 'none',
                 'trees-layer': 'none'
             }
         },
         
-        // STEP 5: Wetlands
-        'wetlands-intro': {
+        // HISTORICAL GRID - Feature 4: 1840 Grid (builds on 1811)
+        'grid-1840': {
+            center: [-73.98, 40.750],
+            zoom: 12,
+            pitch: 0,
+            bearing: 0,
+            layers: {
+                ...hideAllGridLayers(),
+                'grid-1811-fill': 'visible',
+                'grid-1811-outline': 'visible',
+                'grid-1840-fill': 'visible',
+                'grid-1840-outline': 'visible',
+                'building-tiles-layer': 'none',
+                'historical-ecology-layer': 'none',
+                'streams-layer': 'none',
+                'wetlands-layer': 'none',
+                'trees-layer': 'none'
+            }
+        },
+        
+        // HISTORICAL GRID - Feature 5: 1870 Grid (builds on 1840)
+        'grid-1870': {
+            center: [-73.97, 40.780],
+            zoom: 12,
+            pitch: 0,
+            bearing: 0,
+            layers: {
+                ...hideAllGridLayers(),
+                'grid-1811-fill': 'visible',
+                'grid-1811-outline': 'visible',
+                'grid-1840-fill': 'visible',
+                'grid-1840-outline': 'visible',
+                'grid-1870-fill': 'visible',
+                'grid-1870-outline': 'visible',
+                'building-tiles-layer': 'none',
+                'historical-ecology-layer': 'none',
+                'streams-layer': 'none',
+                'wetlands-layer': 'none',
+                'trees-layer': 'none'
+            }
+        },
+        
+        // HISTORICAL GRID - Feature 6: 1900 Grid (builds on 1870)
+        'grid-1900': {
+            center: [-73.96, 40.810],
+            zoom: 12,
+            pitch: 0,
+            bearing: 0,
+            layers: {
+                ...hideAllGridLayers(),
+                'grid-1811-fill': 'visible',
+                'grid-1811-outline': 'visible',
+                'grid-1840-fill': 'visible',
+                'grid-1840-outline': 'visible',
+                'grid-1870-fill': 'visible',
+                'grid-1870-outline': 'visible',
+                'grid-1900-fill': 'visible',
+                'grid-1900-outline': 'visible',
+                'building-tiles-layer': 'none',
+                'historical-ecology-layer': 'none',
+                'streams-layer': 'none',
+                'wetlands-layer': 'none',
+                'trees-layer': 'none'
+            }
+        },
+        
+        // HISTORICAL GRID - Feature 7: Complete Grid (builds on 1900)
+        'complete-grid': {
+            center: [-73.97, 40.76], // Centered on Manhattan
+            zoom: 11.5, // Zoomed in more
+            pitch: 0,
+            bearing: 0,
+            layers: {
+                ...hideAllGridLayers(),
+                'grid-1811-fill': 'visible',
+                'grid-1811-outline': 'visible',
+                'grid-1840-fill': 'visible',
+                'grid-1840-outline': 'visible',
+                'grid-1870-fill': 'visible',
+                'grid-1870-outline': 'visible',
+                'grid-1900-fill': 'visible',
+                'grid-1900-outline': 'visible',
+                'complete-grid-fill': 'visible',
+                'complete-grid-outline': 'visible',
+                'building-tiles-layer': 'none',
+                'historical-ecology-layer': 'none',
+                'streams-layer': 'none',
+                'wetlands-layer': 'none',
+                'trees-layer': 'none'
+            }
+        },
+        
+        // IMPERVIOUS SURFACES - Feature 1
+        'impervious-surfaces': {
             center: [-73.935242, 40.730610],
+            zoom: 11, // Zoomed in a bit more
+            pitch: 0,
+            bearing: 0,
+            layers: {
+                ...hideAllGridLayers(),
+                'building-tiles-layer': 'visible',
+                'historical-ecology-layer': 'none',
+                'streams-layer': 'none',
+                'wetlands-layer': 'none',
+                'trees-layer': 'none'
+            }
+        },
+        
+        // ECOLOGICAL HISTORY - Feature 1: Natural Vegetation
+        'natural-vegetation': {
+            center: [-73.97, 40.78], // Centered on Manhattan
             zoom: 11.5,
             pitch: 0,
             bearing: 0,
             layers: {
-                'census-tracts-fill': 'none',
-                'census-tracts-outline': 'none',
+                ...hideAllGridLayers(),
                 'building-tiles-layer': 'none',
                 'historical-ecology-layer': 'visible',
-                'streams-layer': 'visible',
-                'wetlands-layer': 'visible',
+                'streams-layer': 'none',
+                'wetlands-layer': 'none',
                 'trees-layer': 'none'
             }
         },
         
-        'wetlands-detail': {
-            center: [-73.952778, 40.798120],
-            zoom: 12.5,
+        // ECOLOGICAL HISTORY - Feature 2: Wetlands (layered)
+        'wetlands': {
+            center: [-73.97, 40.78], // Centered on Manhattan
+            zoom: 11.5,
             pitch: 0,
             bearing: 0,
             layers: {
-                'census-tracts-fill': 'none',
-                'census-tracts-outline': 'none',
+                ...hideAllGridLayers(),
                 'building-tiles-layer': 'none',
-                'historical-ecology-layer': 'none',
-                'streams-layer': 'visible',
+                'historical-ecology-layer': 'visible',
                 'wetlands-layer': 'visible',
+                'streams-layer': 'none',
                 'trees-layer': 'none'
             }
         },
         
-        // STEP 6: Tree Coverage
-        'trees-intro': {
+        // ECOLOGICAL HISTORY - Feature 3: Streams (layered)
+        'streams': {
+            center: [-73.97, 40.78], // Centered on Manhattan
+            zoom: 11.5,
+            pitch: 0,
+            bearing: 0,
+            layers: {
+                ...hideAllGridLayers(),
+                'building-tiles-layer': 'none',
+                'historical-ecology-layer': 'visible',
+                'wetlands-layer': 'visible',
+                'streams-layer': 'visible',
+                'trees-layer': 'none'
+            }
+        },
+        
+        // MYCELIUM - Feature 1: Tree Coverage
+        'hidden-network': {
             center: [-73.935242, 40.730610],
             zoom: 11,
             pitch: 0,
             bearing: 0,
             layers: {
-                'census-tracts-fill': 'none',
-                'census-tracts-outline': 'none',
+                ...hideAllGridLayers(),
                 'building-tiles-layer': 'none',
                 'historical-ecology-layer': 'none',
-                'streams-layer': 'none',
                 'wetlands-layer': 'none',
-                'trees-layer': 'visible'
-            }
-        },
-        
-        'trees-detail': {
-            center: [-73.9712, 40.7831],
-            zoom: 13,
-            pitch: 0,
-            bearing: 0,
-            layers: {
-                'census-tracts-fill': 'none',
-                'census-tracts-outline': 'none',
-                'building-tiles-layer': 'visible',
-                'historical-ecology-layer': 'none',
                 'streams-layer': 'none',
-                'wetlands-layer': 'none',
                 'trees-layer': 'visible'
-            },
-            paint: {
-                'building-tiles-layer': {
-                    'raster-opacity': 0.4
-                }
-            }
-        },
-        
-        // Final overview
-        'all-layers': {
-            center: [-73.935242, 40.730610],
-            zoom: 11,
-            pitch: 0,
-            bearing: 0,
-            layers: {
-                'census-tracts-fill': 'visible',
-                'census-tracts-outline': 'visible',
-                'building-tiles-layer': 'visible',
-                'historical-ecology-layer': 'visible',
-                'streams-layer': 'visible',
-                'wetlands-layer': 'visible',
-                'trees-layer': 'visible'
-            },
-            paint: {
-                'census-tracts-fill': {
-                    'fill-opacity': 0.3
-                },
-                'building-tiles-layer': {
-                    'raster-opacity': 0.4
-                },
-                'historical-ecology-layer': {
-                    'fill-opacity': 0.3
-                }
             }
         }
     };
