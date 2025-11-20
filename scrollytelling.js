@@ -168,8 +168,8 @@
         
         // HISTORICAL GRID - Feature 7: Complete Grid (builds on 1900)
         'complete-grid': {
-            center: [-73.97, 40.76], // Centered on Manhattan
-            zoom: 11.5, // Zoomed in more
+            center: [-73.97, 40.78], // Centered on Manhattan
+            zoom: 11,
             pitch: 0,
             bearing: 0,
             layers: {
@@ -188,6 +188,8 @@
                 'historical-ecology-layer': 'none',
                 'streams-layer': 'none',
                 'wetlands-layer': 'none',
+                'parks-layer': 'visible',           
+                'parks-outline-layer': 'visible',
                 'trees-layer': 'none'
             }
         },
@@ -204,6 +206,8 @@
                 'historical-ecology-layer': 'none',
                 'streams-layer': 'none',
                 'wetlands-layer': 'none',
+                'parks-layer': 'none',           
+                'parks-outline-layer': 'none',
                 'trees-layer': 'none'
             }
         },
@@ -220,6 +224,8 @@
                 'historical-ecology-layer': 'visible',
                 'streams-layer': 'none',
                 'wetlands-layer': 'none',
+                'parks-layer': 'none',           
+                'parks-outline-layer': 'none',
                 'trees-layer': 'none'
             }
         },
@@ -235,6 +241,8 @@
                 'building-tiles-layer': 'none',
                 'historical-ecology-layer': 'visible',
                 'wetlands-layer': 'visible',
+                'parks-layer': 'none',           
+                'parks-outline-layer': 'none',
                 'streams-layer': 'none',
                 'trees-layer': 'none'
             }
@@ -251,6 +259,8 @@
                 'building-tiles-layer': 'none',
                 'historical-ecology-layer': 'visible',
                 'wetlands-layer': 'visible',
+                'parks-layer': 'none',           
+                'parks-outline-layer': 'none',
                 'streams-layer': 'visible',
                 'trees-layer': 'none'
             }
@@ -267,6 +277,26 @@
                 'building-tiles-layer': 'none',
                 'historical-ecology-layer': 'none',
                 'wetlands-layer': 'none',
+                'parks-layer': 'visible',          
+                'parks-outline-layer': 'visible',
+                'streams-layer': 'none',
+                'trees-layer': 'visible'
+            }
+        },
+
+        // MYCELIUM - Feature 2: Tree Coverage Manhattan Detail
+        'trees-manhattan': {
+            center: [-73.97, 40.76],
+            zoom: 13, // Zoomed into Manhattan
+            pitch: 0,
+            bearing: 0,
+            layers: {
+                ...hideAllGridLayers(),
+                'building-tiles-layer': 'none',
+                'historical-ecology-layer': 'none',
+                'wetlands-layer': 'none',
+                'parks-layer': 'visible',          
+                'parks-outline-layer': 'visible',
                 'streams-layer': 'none',
                 'trees-layer': 'visible'
             }

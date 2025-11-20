@@ -25,7 +25,7 @@ map.on('load', async () => {
         // British Headquarters
         const britishResponse = await fetch('british-headquarters.geojson');
         const britishData = await britishResponse.json();
-        console.log('✅ British headquarters loaded:', britishData.features.length, 'features');
+        console.log('British headquarters loaded:', britishData.features.length, 'features');
         
         map.addSource('british-grid', {
             type: 'geojson',
@@ -61,7 +61,7 @@ map.on('load', async () => {
         // 1811 Grid
         const grid1811Response = await fetch('1811.geojson');
         const grid1811Data = await grid1811Response.json();
-        console.log('✅ 1811 grid loaded:', grid1811Data.features.length, 'features');
+        console.log('1811 grid loaded:', grid1811Data.features.length, 'features');
         
         map.addSource('grid-1811', {
             type: 'geojson',
@@ -73,7 +73,7 @@ map.on('load', async () => {
             type: 'fill',
             source: 'grid-1811',
             paint: {
-                'fill-color': '#e74c3c',
+                'fill-color': '#9d7d70ff',
                 'fill-opacity': 0.4
             },
             layout: {
@@ -86,8 +86,8 @@ map.on('load', async () => {
             type: 'line',
             source: 'grid-1811',
             paint: {
-                'line-color': '#c0392b',
-                'line-width': 2
+                'line-color': '#9d7d70ff',
+                'line-width': 1.5
             },
             layout: {
                 'visibility': 'none'
@@ -97,7 +97,7 @@ map.on('load', async () => {
         // 1840 Grid
         const grid1840Response = await fetch('1840.geojson');
         const grid1840Data = await grid1840Response.json();
-        console.log('✅ 1840 grid loaded:', grid1840Data.features.length, 'features');
+        console.log('1840 grid loaded:', grid1840Data.features.length, 'features');
         
         map.addSource('grid-1840', {
             type: 'geojson',
@@ -109,7 +109,7 @@ map.on('load', async () => {
             type: 'fill',
             source: 'grid-1840',
             paint: {
-                'fill-color': '#e67e22',
+                'fill-color': '#9d7d70ff',
                 'fill-opacity': 0.4
             },
             layout: {
@@ -122,8 +122,8 @@ map.on('load', async () => {
             type: 'line',
             source: 'grid-1840',
             paint: {
-                'line-color': '#d35400',
-                'line-width': 2
+                'line-color': '#9d7d70ff',
+                'line-width': 1.5
             },
             layout: {
                 'visibility': 'none'
@@ -133,7 +133,7 @@ map.on('load', async () => {
         // 1870 Grid
         const grid1870Response = await fetch('1870.geojson');
         const grid1870Data = await grid1870Response.json();
-        console.log('✅ 1870 grid loaded:', grid1870Data.features.length, 'features');
+        console.log('1870 grid loaded:', grid1870Data.features.length, 'features');
         
         map.addSource('grid-1870', {
             type: 'geojson',
@@ -145,7 +145,7 @@ map.on('load', async () => {
             type: 'fill',
             source: 'grid-1870',
             paint: {
-                'fill-color': '#f39c12',
+                'fill-color': '#9d7d70ff',
                 'fill-opacity': 0.4
             },
             layout: {
@@ -158,8 +158,8 @@ map.on('load', async () => {
             type: 'line',
             source: 'grid-1870',
             paint: {
-                'line-color': '#e67e22',
-                'line-width': 2
+                'line-color': '#9d7d70ff',
+                'line-width': 1.5
             },
             layout: {
                 'visibility': 'none'
@@ -169,7 +169,7 @@ map.on('load', async () => {
         // 1900 Grid
         const grid1900Response = await fetch('1900.geojson');
         const grid1900Data = await grid1900Response.json();
-        console.log('✅ 1900 grid loaded:', grid1900Data.features.length, 'features');
+        console.log('1900 grid loaded:', grid1900Data.features.length, 'features');
         
         map.addSource('grid-1900', {
             type: 'geojson',
@@ -181,7 +181,7 @@ map.on('load', async () => {
             type: 'fill',
             source: 'grid-1900',
             paint: {
-                'fill-color': '#f1c40f',
+                'fill-color': '#9d7d70ff',
                 'fill-opacity': 0.4
             },
             layout: {
@@ -194,8 +194,8 @@ map.on('load', async () => {
             type: 'line',
             source: 'grid-1900',
             paint: {
-                'line-color': '#f39c12',
-                'line-width': 2
+                'line-color': '#9d7d70ff',
+                'line-width': 1.5
             },
             layout: {
                 'visibility': 'none'
@@ -205,7 +205,7 @@ map.on('load', async () => {
         // Complete Grid
         const completeGridResponse = await fetch('complete-grid.geojson');
         const completeGridData = await completeGridResponse.json();
-        console.log('✅ Complete grid loaded:', completeGridData.features.length, 'features');
+        console.log('Complete grid loaded:', completeGridData.features.length, 'features');
         
         map.addSource('complete-grid', {
             type: 'geojson',
@@ -217,7 +217,7 @@ map.on('load', async () => {
             type: 'fill',
             source: 'complete-grid',
             paint: {
-                'fill-color': '#3498db',
+                'fill-color': '#9d7d70ff',
                 'fill-opacity': 0.3
             },
             layout: {
@@ -230,8 +230,8 @@ map.on('load', async () => {
             type: 'line',
             source: 'complete-grid',
             paint: {
-                'line-color': '#2980b9',
-                'line-width': 1.5
+                'line-color': '#9d7d70ff',
+                'line-width': 1
             },
             layout: {
                 'visibility': 'none'
@@ -263,13 +263,13 @@ map.on('load', async () => {
             }
         });
         
-        console.log('✅ Impervious surfaces layer added');
+        console.log('Impervious surfaces layer added');
         
         // ====== LAYER 3: Historical Ecology ======
         console.log('Loading historical ecology...');
         const ecologyResponse = await fetch('georef-export.geojson');
         const ecologyData = await ecologyResponse.json();
-        console.log('✅ Historical ecology data loaded:', ecologyData.features.length, 'features');
+        console.log('Historical ecology data loaded:', ecologyData.features.length, 'features');
         
         map.addSource('historical-ecology', {
             type: 'geojson',
@@ -293,7 +293,7 @@ map.on('load', async () => {
         console.log('Loading streams...');
         const streamsResponse = await fetch('streams-webmap.geojson');
         const streamsData = await streamsResponse.json();
-        console.log('✅ Streams data loaded:', streamsData.features.length, 'features');
+        console.log('Streams data loaded:', streamsData.features.length, 'features');
         
         map.addSource('streams', {
             type: 'geojson',
@@ -305,7 +305,7 @@ map.on('load', async () => {
             type: 'line',
             source: 'streams',
             paint: {
-                'line-color': '#25baed',
+                'line-color': '#406ed8ff',
                 'line-width': 2
             },
             layout: {
@@ -317,7 +317,7 @@ map.on('load', async () => {
         console.log('Loading wetlands...');
         const wetlandsResponse = await fetch('wetlands-webmap.geojson');
         const wetlandsData = await wetlandsResponse.json();
-        console.log('✅ Wetlands data loaded:', wetlandsData.features.length, 'features');
+        console.log('Wetlands data loaded:', wetlandsData.features.length, 'features');
         
         map.addSource('wetlands', {
             type: 'geojson',
@@ -336,60 +336,174 @@ map.on('load', async () => {
                 'visibility': 'none'
             }
         });
-        
-        // ====== LAYER 6: Tree Coverage ======
-        console.log('Loading tree coverage...');
-        const treeResponse = await fetch('https://data.cityofnewyork.us/resource/hn5i-inap.json?$limit=100000');
-        const treeData = await treeResponse.json();
-        console.log('✅ Tree data loaded:', treeData.length, 'trees');
-        
-        // Convert to GeoJSON
-        const treeFeatures = [];
-        for (let i = 0; i < treeData.length; i++) {
-            const item = treeData[i];
-            if (item.location && item.location.coordinates) {
-                treeFeatures.push({
-                    type: 'Feature',
-                    geometry: {
-                        type: 'Point',
-                        coordinates: item.location.coordinates
-                    },
-                    properties: {
-                        objectid: item.objectid,
-                        dbh: item.dbh,
-                        genusspecies: item.genusspecies,
-                        tpcondition: item.tpcondition,
-                        tpstructure: item.tpstructure
-                    }
-                });
-            }
+
+        // ====== LAYER 6: NYC Parks ======
+        console.log('🔄 Loading NYC parks...');
+        try {
+            const parksResponse = await fetch('https://data.cityofnewyork.us/resource/ghu2-eden.geojson');
+            console.log('Response status:', parksResponse.status);
+            const parksData = await parksResponse.json();
+            console.log('Parks data loaded:', parksData.features.length, 'features');
+            
+            map.addSource('parks', {
+                type: 'geojson',
+                data: parksData
+            });
+            
+            map.addLayer({
+                id: 'parks-layer',
+                type: 'fill',
+                source: 'parks',
+                paint: {
+                    'fill-color': '#77c049',
+                    'fill-opacity': 0.4
+                },
+                layout: {
+                    'visibility': 'none'
+                }
+            });
+            
+            map.addLayer({
+                id: 'parks-outline-layer',
+                type: 'line',
+                source: 'parks',
+                paint: {
+                    'line-color': '#77c049',
+                    'line-width': 1
+                },
+                layout: {
+                    'visibility': 'none'
+                }
+            });
+            
+            console.log('Parks layers added');
+        } catch (error) {
+            console.error('Error loading parks:', error);
         }
+
         
-        const treeGeoJSON = {
-            type: 'FeatureCollection',
-            features: treeFeatures
-        };
-        
-        map.addSource('trees', {
-            type: 'geojson',
-            data: treeGeoJSON
-        });
-        
-        map.addLayer({
-            id: 'trees-layer',
-            type: 'circle',
-            source: 'trees',
-            paint: {
-                'circle-color': '#77c049',
-                'circle-radius': 2,
-                'circle-opacity': 0.8
-            },
-            layout: {
-                'visibility': 'none'
+        // ====== LAYER 7: Tree Coverage ======
+        console.log(' Loading tree coverage...');
+
+        // Load trees for overview (100k limit)
+        try {
+            console.log('Loading overview trees (100k limit)...');
+            const treeResponse = await fetch('https://data.cityofnewyork.us/resource/hn5i-inap.json?$limit=100000');
+            console.log('Response status:', treeResponse.status);
+            const treeData = await treeResponse.json();
+            console.log('Tree data loaded:', treeData.length, 'trees');
+            
+            // Convert to GeoJSON
+            const treeFeatures = [];
+            for (let i = 0; i < treeData.length; i++) {
+                const item = treeData[i];
+                if (item.location && item.location.coordinates) {
+                    treeFeatures.push({
+                        type: 'Feature',
+                        geometry: {
+                            type: 'Point',
+                            coordinates: item.location.coordinates
+                        },
+                        properties: {
+                            objectid: item.objectid,
+                            dbh: item.dbh,
+                            genusspecies: item.genusspecies,
+                            tpcondition: item.tpcondition,
+                            tpstructure: item.tpstructure
+                        }
+                    });
+                }
             }
-        });
-        
-        console.log('✅ All layers loaded successfully!');
+            
+            console.log('Converted to', treeFeatures.length, 'tree features');
+            
+            const treeGeoJSON = {
+                type: 'FeatureCollection',
+                features: treeFeatures
+            };
+            
+            map.addSource('trees', {
+                type: 'geojson',
+                data: treeGeoJSON
+            });
+            
+            map.addLayer({
+                id: 'trees-layer',
+                type: 'circle',
+                source: 'trees',
+                paint: {
+                    'circle-color': '#77c049',
+                    'circle-radius': 2,
+                    'circle-opacity': 0.8
+                },
+                layout: {
+                    'visibility': 'none'
+                }
+            });
+            console.log('Trees overview layer added');
+        } catch (error) {
+            console.error('Error loading trees:', error);
+        }
+
+        // Load trees for Manhattan detail (higher limit)
+        try {
+            console.log('Loading Manhattan detail trees (300k limit)...');
+            const treeDetailResponse = await fetch('https://data.cityofnewyork.us/resource/hn5i-inap.json?$limit=500000');
+            console.log('Response status:', treeDetailResponse.status);
+            const treeDetailData = await treeDetailResponse.json();
+            console.log('Tree detail data loaded:', treeDetailData.length, 'trees');
+            
+            // Convert to GeoJSON
+            const treeDetailFeatures = [];
+            for (let i = 0; i < treeDetailData.length; i++) {
+                const item = treeDetailData[i];
+                if (item.location && item.location.coordinates) {
+                    treeDetailFeatures.push({
+                        type: 'Feature',
+                        geometry: {
+                            type: 'Point',
+                            coordinates: item.location.coordinates
+                        },
+                        properties: {
+                            objectid: item.objectid,
+                            dbh: item.dbh,
+                            genusspecies: item.genusspecies,
+                            tpcondition: item.tpcondition,
+                            tpstructure: item.tpstructure
+                        }
+                    });
+                }
+            }
+            
+            console.log('Converted to', treeDetailFeatures.length, 'tree detail features');
+            
+            const treeDetailGeoJSON = {
+                type: 'FeatureCollection',
+                features: treeDetailFeatures
+            };
+            
+            map.addSource('trees-detail', {
+                type: 'geojson',
+                data: treeDetailGeoJSON
+            });
+            
+            map.addLayer({
+                id: 'trees-detail-layer',
+                type: 'circle',
+                source: 'trees-detail',
+                paint: {
+                    'circle-color': '#77c049',
+                    'circle-radius': 2,
+                    'circle-opacity': 0.8
+                },
+                layout: {
+                    'visibility': 'none'
+                }
+            });
+            console.log('Trees detail layer added');
+        } catch (error) {
+            console.error('Error loading tree details:', error);
+        }
         
         // ====== INTERACTIONS ======
         
@@ -510,7 +624,7 @@ map.on('load', async () => {
         });
         
     } catch (error) {
-        console.error('❌ Error loading layers:', error);
+        console.error('Error loading layers:', error);
     }
 });
 
