@@ -5,7 +5,7 @@ const map4 = new maplibregl.Map({
     container: 'map4',
     style: 'style.json',
     center: [-73.952778, 40.798120],
-    zoom: 12
+    zoom: 11
 });
 
 // Add navigation controls
