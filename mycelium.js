@@ -1024,65 +1024,89 @@
             ctx.fill();
         });
     }
-    
-    console.log('🍄 Ultra-growth mycelium with attraction & UNLIMITED growth loaded');
-})();
 
-function exportMyceliumGeoJSON(filename = 'mycelium-network.geojson') {
-    const features = [];
+ // ===== EXPORT FUNCTIONS =====
     
-    // Export each edge as a LineString
-    nodes.forEach(node => {
-        if (!node.parent) return;
+    // Export as GeoJSON
+    window.exportMyceliumGeoJSON = function(filename = 'mycelium-network.geojson') {
+        const features = [];
         
-        features.push({
-            type: 'Feature',
-            properties: {
-                thickness: node.thickness,
-                flow: node.flow,
-                zoneId: node.zoneId,
-                isSeed: node.isSeed
-            },
-            geometry: {
-                type: 'LineString',
-                coordinates: [
-                    [node.parent.lng, node.parent.lat],
-                    [node.lng, node.lat]
-                ]
-            }
+        // Export each edge as a LineString
+        nodes.forEach(node => {
+            if (!node.parent) return;
+            
+            features.push({
+                type: 'Feature',
+                properties: {
+                    thickness: node.thickness,
+                    flow: node.flow,
+                    zoneId: node.zoneId,
+                    isSeed: node.isSeed
+                },
+                geometry: {
+                    type: 'LineString',
+                    coordinates: [
+                        [node.parent.lng, node.parent.lat],
+                        [node.lng, node.lat]
+                    ]
+                }
+            });
         });
-    });
-    
-    // Add seed points
-    seeds.forEach(seed => {
-        features.push({
-            type: 'Feature',
-            properties: {
-                type: 'seed',
-                zoneId: seed.zoneId,
-                descendantCount: seed.descendantCount
-            },
-            geometry: {
-                type: 'Point',
-                coordinates: [seed.lng, seed.lat]
-            }
+        
+        // Add seed points
+        seeds.forEach(seed => {
+            features.push({
+                type: 'Feature',
+                properties: {
+                    type: 'seed',
+                    zoneId: seed.zoneId,
+                    descendantCount: seed.descendantCount
+                },
+                geometry: {
+                    type: 'Point',
+                    coordinates: [seed.lng, seed.lat]
+                }
+            });
         });
-    });
-    
-    const geojson = {
-        type: 'FeatureCollection',
-        features: features
+        
+        const geojson = {
+            type: 'FeatureCollection',
+            features: features
+        };
+        
+        // Download
+        const blob = new Blob([JSON.stringify(geojson, null, 2)], 
+            { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.download = filename;
+        link.href = url;
+        link.click();
+        URL.revokeObjectURL(url);
+        
+        console.log(`✅ Exported ${features.length} features as GeoJSON`);
     };
     
-    // Download
-    const blob = new Blob([JSON.stringify(geojson, null, 2)], 
-        { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.download = filename;
-    link.href = url;
-    link.click();
-    URL.revokeObjectURL(url);
+    // Export as transparent PNG
+    window.exportMyceliumTransparent = function(filename = 'mycelium-transparent.png') {
+        if (!canvas) {
+            console.error('Canvas not initialized');
+            return;
+        }
+        
+        canvas.toBlob((blob) => {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = url;
+            link.click();
+            URL.revokeObjectURL(url);
+        });
+        
+        console.log('✅ Exported transparent mycelium PNG');
+    };
     
-    console.log(`✅ Exported ${features.length} features as GeoJSON`);
-}
+    console.log('🍄 Ultra-growth mycelium with attraction & UNLIMITED growth loaded');
+    console.log('💾 Export functions available: exportMyceliumGeoJSON(), exportMyceliumTransparent()');
+
+})();

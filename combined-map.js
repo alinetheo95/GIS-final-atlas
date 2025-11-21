@@ -19,6 +19,21 @@ map.on('load', async () => {
     console.log('Main map loaded, loading all layers...');
     
     try {
+            map.addSource('mycelium', {
+            type: 'geojson',
+            data: 'mycelium-network.geojson'
+        });
+
+        map.addLayer({
+            id: 'mycelium-lines',
+            type: 'line',
+            source: 'mycelium',
+            paint: {
+                'line-color': '#ffffffff',
+                'line-width': 0.5,
+                'line-opacity': 0.7
+            }
+        });
         // ====== LAYER 1: Historical Grid Progression ======
         console.log('Loading historical grid layers...');
         

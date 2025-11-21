@@ -34,8 +34,8 @@
     const steps = {
         // INTRO
         'intro': {
-            center: [-73.935242, 40.730610],
-            zoom: 11,
+            center: [-73.98, 40.76],
+            zoom: 13.5,
             pitch: 0,
             bearing: 0,
             layers: {
@@ -66,7 +66,9 @@
                 'wetlands-layer': 'none',
                 'parks-layer': 'none',           
                 'parks-outline-layer': 'none',
-                'trees-layer': 'none'
+                'trees-layer': 'none',
+                'mycelium-lines': 'none',         
+                'mycelium-seeds': 'none'  
             }
         },
         
@@ -86,7 +88,9 @@
                 'wetlands-layer': 'none',
                 'parks-layer': 'none',           
                 'parks-outline-layer': 'none',
-                'trees-layer': 'none'
+                'trees-layer': 'none',
+                'mycelium-lines': 'none',         
+                'mycelium-seeds': 'none' 
             }
         },
         
@@ -106,7 +110,9 @@
                 'wetlands-layer': 'none',
                 'parks-layer': 'none',           
                 'parks-outline-layer': 'none',
-                'trees-layer': 'none'
+                'trees-layer': 'none',
+                'mycelium-lines': 'none',         
+                'mycelium-seeds': 'none' 
             }
         },
         
@@ -128,7 +134,9 @@
                 'wetlands-layer': 'none',
                 'parks-layer': 'none',           
                 'parks-outline-layer': 'none',
-                'trees-layer': 'none'
+                'trees-layer': 'none',
+                'mycelium-lines': 'none',         
+                'mycelium-seeds': 'none' 
             }
         },
         
@@ -152,7 +160,9 @@
                 'wetlands-layer': 'none',
                 'parks-layer': 'none',           
                 'parks-outline-layer': 'none',
-                'trees-layer': 'none'
+                'trees-layer': 'none',
+                'mycelium-lines': 'none',         
+                'mycelium-seeds': 'none' 
             }
         },
         
@@ -178,7 +188,9 @@
                 'wetlands-layer': 'none',
                 'parks-layer': 'none',           
                 'parks-outline-layer': 'none',
-                'trees-layer': 'none'
+                'trees-layer': 'none',
+                'mycelium-lines': 'none',         
+                'mycelium-seeds': 'none' 
             }
         },
         
@@ -206,7 +218,9 @@
                 'wetlands-layer': 'none',
                 'parks-layer': 'visible',           
                 'parks-outline-layer': 'visible',
-                'trees-layer': 'none'
+                'trees-layer': 'none',
+                'mycelium-lines': 'none',         
+                'mycelium-seeds': 'none' 
             }
         },
         
@@ -224,7 +238,9 @@
                 'wetlands-layer': 'none',
                 'parks-layer': 'none',           
                 'parks-outline-layer': 'none',
-                'trees-layer': 'none'
+                'trees-layer': 'none',
+                'mycelium-lines': 'none',         
+                'mycelium-seeds': 'none' 
             }
         },
         
@@ -242,7 +258,9 @@
                 'wetlands-layer': 'none',
                 'parks-layer': 'none',           
                 'parks-outline-layer': 'none',
-                'trees-layer': 'none'
+                'trees-layer': 'none',
+                'mycelium-lines': 'none',         
+                'mycelium-seeds': 'none' 
             }
         },
         
@@ -260,7 +278,9 @@
                 'parks-layer': 'none',           
                 'parks-outline-layer': 'none',
                 'streams-layer': 'none',
-                'trees-layer': 'none'
+                'trees-layer': 'none',
+                'mycelium-lines': 'none',         
+                'mycelium-seeds': 'none' 
             }
         },
         
@@ -278,7 +298,9 @@
                 'parks-layer': 'none',           
                 'parks-outline-layer': 'none',
                 'streams-layer': 'visible',
-                'trees-layer': 'none'
+                'trees-layer': 'none',
+                'mycelium-lines': 'none',         
+                'mycelium-seeds': 'none' 
             }
         },
         
@@ -296,7 +318,9 @@
                 'parks-layer': 'visible',          
                 'parks-outline-layer': 'visible',
                 'streams-layer': 'none',
-                'trees-layer': 'visible'
+                'trees-layer': 'visible',
+                'mycelium-lines': 'none',         
+                'mycelium-seeds': 'none' 
             }
         },
 
@@ -314,7 +338,9 @@
                 'parks-layer': 'visible',          
                 'parks-outline-layer': 'visible',
                 'streams-layer': 'none',
-                'trees-layer': 'visible'
+                'trees-layer': 'visible',
+                'mycelium-lines': 'none',         
+                'mycelium-seeds': 'none' 
             }
         },
 
@@ -332,27 +358,11 @@
                 'parks-layer': 'visible',          
                 'parks-outline-layer': 'visible',
                 'streams-layer': 'none',
-                'trees-layer': 'visible'
+                'trees-layer': 'visible',
+                'mycelium-lines': 'none',         
+                'mycelium-seeds': 'none' 
             }
         },
-
-        // MYCELIUM - Feature 4: Full Manhattan Extent (zoomed out)
-        'manhattan-extent': {
-            center: [-73.97, 40.78],
-            zoom: 11, // Zoomed out to show full extent
-            pitch: 0,
-            bearing: 0,
-            layers: {
-                ...hideAllGridLayers(),
-                'building-tiles-layer': 'none',
-                'historical-ecology-layer': 'none',
-                'wetlands-layer': 'none',
-                'parks-layer': 'visible',          
-                'parks-outline-layer': 'visible',
-                'streams-layer': 'none',
-                'trees-layer': 'visible'
-            }
-        }
     };
     
     // Handle step transitions
