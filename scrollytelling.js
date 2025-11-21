@@ -339,7 +339,7 @@
         // MYCELIUM - Feature 4: Full Manhattan Extent (zoomed out)
         'manhattan-extent': {
             center: [-73.97, 40.78],
-            zoom: 10.5, // Zoomed out to show full extent
+            zoom: 11, // Zoomed out to show full extent
             pitch: 0,
             bearing: 0,
             layers: {

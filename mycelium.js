@@ -1,5 +1,6 @@
 // ===== MYCELIUM SIMULATION - HYBRID ORGANIC + BALANCED =====
 // Combines zone-based distribution with flexible growth limits for natural variation
+// MODIFIED: Weighted seed distribution favoring Manhattan center and north/south tips
 
 (function() {
     let simulationInitialized = false;
@@ -56,8 +57,8 @@
         attractionToOtherZones: true,
         
         // ZONE CONFIGURATION
-        numberOfZones: 12, // INCREASED from 9 for more distribution
-        seedsPerZone: 20, // INCREASED from 15 - many more seeds
+        numberOfZones: 16, // INCREASED from 12 - doubled
+        seedsPerZone: 30, // INCREASED from 20 - 1.5x increase
         tipsPerZone: 30,
         zoneRotation: true,
         
@@ -135,12 +136,27 @@
                 if (entry.isIntersecting) {
                     const heading = entry.target.querySelector('h2');
                     const isHiddenNetwork = heading && heading.textContent.includes('THE HIDDEN NETWORK');
+                    const isFullNetwork = heading && heading.textContent.includes('THE FULL NETWORK');
                     
                     if (isHiddenNetwork) {
-                        console.log('🍄 Activating hybrid organic simulation');
+                        // Start growing
+                        console.log('🍄 Starting mycelium growth');
                         activateSimulation();
+                    } else if (isFullNetwork) {
+                        // Freeze growth but keep visible
+                        console.log('🍄 Freezing mycelium growth (keeping visible)');
+                        if (isRunning) {
+                            isRunning = false;
+                            if (animationFrame) {
+                                cancelAnimationFrame(animationFrame);
+                                animationFrame = null;
+                            }
+                            // Keep canvas visible at current opacity
+                        }
                     } else {
+                        // Hide on other sections
                         if (isRunning || canvas.style.opacity !== '0') {
+                            console.log('🍄 Pausing and hiding mycelium');
                             pauseSimulation();
                         }
                     }
@@ -163,6 +179,10 @@
         } else if (treesLoaded && !isRunning) {
             canvas.style.opacity = '1';
             startSimulation();
+        } else if (treesLoaded && isRunning) {
+            // Already running - just ensure canvas is visible
+            canvas.style.opacity = '1';
+            console.log('🍄 Simulation already running, keeping it active');
         }
     }
     
@@ -249,6 +269,7 @@
                         paint: {
                             'line-color': '#928b88ff',
                             'line-width': 1,
+                            'line-opacity': 0.7
                         }
                     });
                     
@@ -364,6 +385,51 @@
         return zones;
     }
     
+    // NEW: Calculate location weight for seed distribution
+    function getLocationWeight(lat, lng) {
+        // Manhattan bounds for reference
+        const manhattanCenter = {
+            lat: 40.7831,  // ~Midtown
+            lng: -73.9712
+        };
+        const southTip = 40.705;   // Battery Park area
+        const northTip = 40.877;   // Inwood
+        
+        // Distance from center (normalized)
+        const distFromCenter = Math.sqrt(
+            Math.pow(lat - manhattanCenter.lat, 2) + 
+            Math.pow(lng - manhattanCenter.lng, 2)
+        );
+        
+        // Check if in southern tip (below 40.715)
+        const inSouthTip = lat < 40.715;
+        
+        // Check if in northern tip (above 40.860)
+        const inNorthTip = lat > 40.860;
+        
+        // Base weight starts at 1.0
+        let weight = 1.0;
+        
+        // Boost center area (within ~2km radius)
+        if (distFromCenter < 0.025) {
+            weight = 3.0;  // 3x more likely
+        } else if (distFromCenter < 0.040) {
+            weight = 2.0;  // 2x more likely
+        }
+        
+        // Boost southern tip
+        if (inSouthTip) {
+            weight = Math.max(weight, 2.5);
+        }
+        
+        // Boost northern tip
+        if (inNorthTip) {
+            weight = Math.max(weight, 2.5);
+        }
+        
+        return weight;
+    }
+    
     function distributeTreesToZones(trees, zones, seedsPerZone) {
         trees.forEach(tree => {
             const lat = parseFloat(tree.latitude);
@@ -389,7 +455,12 @@
                 return;
             }
             
-            // Spatial sampling within zone
+            // Add location weights to trees
+            zone.trees.forEach(tree => {
+                tree.weight = getLocationWeight(tree.lat, tree.lng);
+            });
+            
+            // Weighted spatial sampling within zone
             const gridSize = Math.sqrt(zone.trees.length / seedsPerZone);
             const subGrid = new Map();
             
@@ -400,18 +471,25 @@
                     ((zone.bounds.maxLat - zone.bounds.minLat) / gridSize));
                 const key = `${gridX},${gridY}`;
                 
-                if (!subGrid.has(key)) {
+                // Keep tree with highest weight in each grid cell
+                if (!subGrid.has(key) || tree.weight > subGrid.get(key).weight) {
                     subGrid.set(key, tree);
                 }
             });
             
-            zone.seeds = Array.from(subGrid.values()).slice(0, seedsPerZone);
+            // Sort by weight and take top seeds
+            const sortedSeeds = Array.from(subGrid.values())
+                .sort((a, b) => b.weight - a.weight)
+                .slice(0, seedsPerZone);
+            
+            zone.seeds = sortedSeeds;
             totalSeeds += zone.seeds.length;
             
-            console.log(`📍 Zone ${zone.id}: ${zone.trees.length} trees → ${zone.seeds.length} seeds (competitiveness: ${zone.competitiveness.toFixed(2)})`);
+            const avgWeight = zone.seeds.reduce((sum, s) => sum + s.weight, 0) / zone.seeds.length;
+            console.log(`📍 Zone ${zone.id}: ${zone.trees.length} trees → ${zone.seeds.length} seeds (avg weight: ${avgWeight.toFixed(2)}, competitiveness: ${zone.competitiveness.toFixed(2)})`);
         });
         
-        console.log(`✅ Total seeds: ${totalSeeds}`);
+        console.log(`✅ Total seeds: ${totalSeeds} (weighted for center & tips)`);
         return zones;
     }
     
@@ -949,3 +1027,62 @@
     
     console.log('🍄 Ultra-growth mycelium with attraction & UNLIMITED growth loaded');
 })();
+
+function exportMyceliumGeoJSON(filename = 'mycelium-network.geojson') {
+    const features = [];
+    
+    // Export each edge as a LineString
+    nodes.forEach(node => {
+        if (!node.parent) return;
+        
+        features.push({
+            type: 'Feature',
+            properties: {
+                thickness: node.thickness,
+                flow: node.flow,
+                zoneId: node.zoneId,
+                isSeed: node.isSeed
+            },
+            geometry: {
+                type: 'LineString',
+                coordinates: [
+                    [node.parent.lng, node.parent.lat],
+                    [node.lng, node.lat]
+                ]
+            }
+        });
+    });
+    
+    // Add seed points
+    seeds.forEach(seed => {
+        features.push({
+            type: 'Feature',
+            properties: {
+                type: 'seed',
+                zoneId: seed.zoneId,
+                descendantCount: seed.descendantCount
+            },
+            geometry: {
+                type: 'Point',
+                coordinates: [seed.lng, seed.lat]
+            }
+        });
+    });
+    
+    const geojson = {
+        type: 'FeatureCollection',
+        features: features
+    };
+    
+    // Download
+    const blob = new Blob([JSON.stringify(geojson, null, 2)], 
+        { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = filename;
+    link.href = url;
+    link.click();
+    URL.revokeObjectURL(url);
+    
+    console.log(`✅ Exported ${features.length} features as GeoJSON`);
+}
