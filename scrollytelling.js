@@ -24,7 +24,9 @@
             'grid-1900-fill': 'none',
             'grid-1900-outline': 'none',
             'complete-grid-fill': 'none',
-            'complete-grid-outline': 'none'
+            'complete-grid-outline': 'none',
+            'parks-layer': 'none',           
+            'parks-outline-layer': 'none'
         };
     }
     
@@ -42,6 +44,8 @@
                 'historical-ecology-layer': 'none',
                 'streams-layer': 'none',
                 'wetlands-layer': 'none',
+                'parks-layer': 'none',           
+                'parks-outline-layer': 'none',
                 'trees-layer': 'none'
             }
         },
@@ -60,6 +64,8 @@
                 'historical-ecology-layer': 'none',
                 'streams-layer': 'none',
                 'wetlands-layer': 'none',
+                'parks-layer': 'none',           
+                'parks-outline-layer': 'none',
                 'trees-layer': 'none'
             }
         },
@@ -78,6 +84,8 @@
                 'historical-ecology-layer': 'none',
                 'streams-layer': 'none',
                 'wetlands-layer': 'none',
+                'parks-layer': 'none',           
+                'parks-outline-layer': 'none',
                 'trees-layer': 'none'
             }
         },
@@ -96,6 +104,8 @@
                 'historical-ecology-layer': 'none',
                 'streams-layer': 'none',
                 'wetlands-layer': 'none',
+                'parks-layer': 'none',           
+                'parks-outline-layer': 'none',
                 'trees-layer': 'none'
             }
         },
@@ -116,6 +126,8 @@
                 'historical-ecology-layer': 'none',
                 'streams-layer': 'none',
                 'wetlands-layer': 'none',
+                'parks-layer': 'none',           
+                'parks-outline-layer': 'none',
                 'trees-layer': 'none'
             }
         },
@@ -138,6 +150,8 @@
                 'historical-ecology-layer': 'none',
                 'streams-layer': 'none',
                 'wetlands-layer': 'none',
+                'parks-layer': 'none',           
+                'parks-outline-layer': 'none',
                 'trees-layer': 'none'
             }
         },
@@ -162,6 +176,8 @@
                 'historical-ecology-layer': 'none',
                 'streams-layer': 'none',
                 'wetlands-layer': 'none',
+                'parks-layer': 'none',           
+                'parks-outline-layer': 'none',
                 'trees-layer': 'none'
             }
         },
@@ -266,7 +282,7 @@
             }
         },
         
-        // MYCELIUM - Feature 1: Tree Coverage
+// MYCELIUM - Feature 1: Tree Coverage Overview
         'hidden-network': {
             center: [-73.935242, 40.730610],
             zoom: 11,
@@ -284,10 +300,46 @@
             }
         },
 
-        // MYCELIUM - Feature 2: Tree Coverage Manhattan Detail
-        'trees-manhattan': {
+        // MYCELIUM - Feature 2: Manhattan Sans Grid
+        'manhattan-sans-grid': {
             center: [-73.97, 40.76],
             zoom: 13, // Zoomed into Manhattan
+            pitch: 0,
+            bearing: 0,
+            layers: {
+                ...hideAllGridLayers(),
+                'building-tiles-layer': 'none',
+                'historical-ecology-layer': 'none',
+                'wetlands-layer': 'none',
+                'parks-layer': 'visible',          
+                'parks-outline-layer': 'visible',
+                'streams-layer': 'none',
+                'trees-layer': 'visible'
+            }
+        },
+
+        // MYCELIUM - Feature 3: The Hidden Network (Growth starts here)
+        'hidden-network-growth': {
+            center: [-73.97, 40.76],
+            zoom: 13,
+            pitch: 0,
+            bearing: 0,
+            layers: {
+                ...hideAllGridLayers(),
+                'building-tiles-layer': 'none',
+                'historical-ecology-layer': 'none',
+                'wetlands-layer': 'none',
+                'parks-layer': 'visible',          
+                'parks-outline-layer': 'visible',
+                'streams-layer': 'none',
+                'trees-layer': 'visible'
+            }
+        },
+
+        // MYCELIUM - Feature 4: Full Manhattan Extent (zoomed out)
+        'manhattan-extent': {
+            center: [-73.97, 40.78],
+            zoom: 10.5, // Zoomed out to show full extent
             pitch: 0,
             bearing: 0,
             layers: {

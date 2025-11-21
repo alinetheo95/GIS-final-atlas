@@ -1,96 +1,579 @@
-// ===== MYCELIUM SIMULATION FOR TREE COVERAGE MAP =====
-// This script creates a hybrid DLA/Hyphae/Physarum growth simulation
-// that runs only on the tree coverage map (#map)
+// ===== MYCELIUM SIMULATION - HYBRID ORGANIC + BALANCED =====
+// Combines zone-based distribution with flexible growth limits for natural variation
 
-// Wait for the tree map to be initialized
-function waitForTreeMap() {
-    if (window.treeMap) {
-        console.log('Tree map found, initializing mycelium simulation');
-        initMyceliumSimulation(window.treeMap);
-    } else {
-        setTimeout(waitForTreeMap, 100);
-    }
-}
-
-// Start when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', waitForTreeMap);
-} else {
-    waitForTreeMap();
-}
-
-function initMyceliumSimulation(treeMap) {
-    // ===== CANVAS SETUP =====
-    const canvas = document.getElementById('myceliumCanvas');
-    if (!canvas) {
-        console.error('Canvas element not found');
-        return;
-    }
-    
-    const ctx = canvas.getContext('2d');
-    const mapContainer = document.getElementById('map');
-    
-    // Position and size canvas to match map
-    function updateCanvasPosition() {
-        const rect = mapContainer.getBoundingClientRect();
-        canvas.width = rect.width;
-        canvas.height = rect.height;
-        canvas.style.position = 'absolute';
-        canvas.style.top = '0';
-        canvas.style.left = '0';
-        canvas.style.width = rect.width + 'px';
-        canvas.style.height = rect.height + 'px';
-        canvas.style.pointerEvents = 'none';
-        
-        // Redraw if nodes exist
-        if (nodes.length > 0) {
-            draw();
-        }
-    }
-    
-    updateCanvasPosition();
-    window.addEventListener('resize', updateCanvasPosition);
-    window.addEventListener('scroll', updateCanvasPosition);
-    
-    // Redraw when map moves or zooms
-    treeMap.on('move', () => {
-        if (nodes.length > 0) draw();
-    });
-    
-    treeMap.on('zoom', () => {
-        if (nodes.length > 0) draw();
-    });
-
-    // ===== SIMULATION STATE =====
+(function() {
+    let simulationInitialized = false;
+    let isRunning = false;
     let seeds = [];
     let nodes = [];
     let activeTips = [];
-    let isRunning = false;
-    let isSeedMode = false;
     let iteration = 0;
     let animationFrame = null;
+    let canvas, ctx, map;
+    let treesLoaded = false;
+    let loadingTrees = false;
+    let manhattanBoundary = null;
+    let zones = [];
+    let streetGrid = []; // NEW: Store street grid
     
-    // ===== CONFIGURATION =====
+    // Configuration - ULTRA GROWTH MODE WITH UNLIMITED GROWTH + GRID FOLLOWING
     const config = {
         stepsPerFrame: 5,
-        maxActiveTips: 50,
-        stepSize: 0.0003, // degrees lat/lng
-        branchProbability: 0.15,
-        branchAngle: 45 * Math.PI / 180,
-        stickDistance: 0.0005,
-        avoidanceDistance: 0.0008,
-        killDistance: 0.02,
-        spawnDistance: 0.005,
+        maxActiveTips: 200,
+        stepSize: 0.0003,
+        branchProbability: 0.25,
+        branchAngle: 60 * Math.PI / 180,
+        avoidanceDistance: 0.0007,
+        
+        killDistance: 0.05,
+        useHybridKillDistance: true,
+        networkKillWeight: 0.25,
+        
+        // NEW: GRID FOLLOWING
+        useGridFollowing: true,
+        gridAttractionDistance: 0.002,
+        gridAttractionStrength: 0.5,
+        gridBranchProbability: 0.12,
+        
+        // REMOVED GROWTH CAPS - unlimited growth like original!
+        useGrowthCaps: false, // NEW: disable growth caps
+        minGrowthPerSeed: 300, // Only used if caps enabled
+        maxGrowthPerSeed: 800,
+        growthVariation: 0.4,
+        
         reinforcementRate: 0.05,
-        decayRate: 0.02,
+        decayRate: 0.012,
         useReinforcement: true,
         useAvoidance: true,
-        useDLA: true
+        useDLA: true,
+        directionChangeRate: 0.5, // REDUCED from 0.75 - more persistent radial direction
+        radialBias: 0.4, // NEW: Bias toward growing away from seed center
+        
+        // ATTRACTION TO OTHER NETWORKS - adjusted for radial growth
+        useAttraction: true,
+        attractionDistance: 0.018, // INCREASED - sense networks from farther
+        attractionStrength: 0.2, // REDUCED from 0.3 - less aggressive attraction, more radial
+        attractionToOtherZones: true,
+        
+        // ZONE CONFIGURATION
+        numberOfZones: 12, // INCREASED from 9 for more distribution
+        seedsPerZone: 20, // INCREASED from 15 - many more seeds
+        tipsPerZone: 30,
+        zoneRotation: true,
+        
+        // GROWTH DYNAMICS
+        allowZoneCompetition: true,
+        competitionPressure: 0.20
     };
-
-    // ===== NODE CLASS =====
+    
+    function waitForMap() {
+        if (window.sharedMap && window.sharedMap.loaded()) {
+            initMyceliumSimulation();
+        } else if (window.sharedMap) {
+            window.sharedMap.on('load', initMyceliumSimulation);
+        } else {
+            setTimeout(waitForMap, 100);
+        }
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', waitForMap);
+    } else {
+        waitForMap();
+    }
+    
+    function initMyceliumSimulation() {
+        map = window.sharedMap;
+        console.log('🍄 Initializing hybrid organic mycelium simulation...');
+        
+        canvas = document.createElement('canvas');
+        canvas.id = 'myceliumCanvas';
+        canvas.style.position = 'fixed';
+        canvas.style.top = '0';
+        canvas.style.right = '0';
+        canvas.style.width = '60%';
+        canvas.style.height = '100vh';
+        canvas.style.pointerEvents = 'none';
+        canvas.style.zIndex = '999';
+        canvas.style.opacity = '0';
+        canvas.style.transition = 'opacity 1s ease';
+        document.body.appendChild(canvas);
+        
+        ctx = canvas.getContext('2d');
+        
+        updateCanvasSize();
+        window.addEventListener('resize', updateCanvasSize);
+        
+        map.on('move', () => {
+            if (nodes.length > 0) draw();
+        });
+        
+        map.on('zoom', () => {
+            if (nodes.length > 0) draw();
+        });
+        
+        setupScrollObserver();
+        
+        simulationInitialized = true;
+        console.log('✅ Hybrid mycelium ready');
+    }
+    
+    function updateCanvasSize() {
+        const mapContainer = document.getElementById('map');
+        const rect = mapContainer.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        
+        if (nodes.length > 0) draw();
+    }
+    
+    function setupScrollObserver() {
+        const allSteps = document.querySelectorAll('.step');
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const heading = entry.target.querySelector('h2');
+                    const isHiddenNetwork = heading && heading.textContent.includes('THE HIDDEN NETWORK');
+                    
+                    if (isHiddenNetwork) {
+                        console.log('🍄 Activating hybrid organic simulation');
+                        activateSimulation();
+                    } else {
+                        if (isRunning || canvas.style.opacity !== '0') {
+                            pauseSimulation();
+                        }
+                    }
+                }
+            });
+        }, {
+            threshold: 0.5,
+            rootMargin: '0px'
+        });
+        
+        allSteps.forEach(step => {
+            observer.observe(step);
+        });
+    }
+    
+    function activateSimulation() {
+        if (!treesLoaded && !loadingTrees) {
+            canvas.style.opacity = '1';
+            loadTreeData();
+        } else if (treesLoaded && !isRunning) {
+            canvas.style.opacity = '1';
+            startSimulation();
+        }
+    }
+    
+    function pauseSimulation() {
+        isRunning = false;
+        if (animationFrame) {
+            cancelAnimationFrame(animationFrame);
+            animationFrame = null;
+        }
+        canvas.style.opacity = '0';
+    }
+    
+    function startSimulation() {
+        if (seeds.length === 0) {
+            console.warn('No seeds available');
+            return;
+        }
+        
+        isRunning = true;
+        canvas.style.opacity = '1';
+        
+        if (activeTips.length === 0) {
+            spawnInitialTips();
+        }
+        
+        simulationStep();
+    }
+    
+    // ===== GRID FUNCTIONS =====
+    
+    /**
+     * Load complete-grid.geojson from same directory as HTML file
+     */
+    async function loadCompleteGrid() {
+        try {
+            console.log('🗺️ Loading complete-grid.geojson...');
+            
+            // Fetch from same directory as the HTML file
+            // Make sure complete-grid.geojson is in the same folder as your HTML file
+            const response = await fetch('./complete-grid.geojson');
+            
+            if (!response.ok) {
+                throw new Error(`Failed to load complete-grid.geojson: ${response.status} ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            const grid = [];
+            
+            console.log(`📥 Loaded GeoJSON with ${data.features.length} features`);
+            
+            // Convert GeoJSON features to grid format
+            data.features.forEach(feature => {
+                if (feature.geometry && feature.geometry.type === 'LineString') {
+                    const coords = feature.geometry.coordinates;
+                    // Remove z-coordinate (0.0) and keep only [lng, lat]
+                    const coords2D = coords.map(c => [c[0], c[1]]);
+                    if (coords2D.length > 1) {
+                        grid.push(coords2D);
+                    }
+                } else if (feature.geometry && feature.geometry.type === 'MultiLineString') {
+                    feature.geometry.coordinates.forEach(lineString => {
+                        const coords2D = lineString.map(c => [c[0], c[1]]);
+                        if (coords2D.length > 1) {
+                            grid.push(coords2D);
+                        }
+                    });
+                }
+            });
+            
+            console.log(`✅ Loaded ${grid.length} street segments from complete-grid.geojson`);
+            
+            // ADD GRID TO MAP AS VISIBLE LAYER
+            if (map) {
+                try {
+                    map.addSource('street-grid', {
+                        type: 'geojson',
+                        data: data
+                    });
+                    
+                    map.addLayer({
+                        id: 'street-grid-layer',
+                        type: 'line',
+                        source: 'street-grid',
+                        paint: {
+                            'line-color': '#928b88ff',
+                            'line-width': 1,
+                        }
+                    });
+                    
+                    console.log('✅ Added street grid to map');
+                } catch (mapError) {
+                    console.error('Error adding grid to map:', mapError);
+                }
+            }
+            
+            return grid;
+            
+        } catch (error) {
+            console.error('Error loading complete-grid.geojson:', error);
+            console.log('⚠️ Grid following disabled - continuing without grid');
+            console.log('💡 To enable grid: Place complete-grid.geojson in the same folder as your HTML file');
+            return [];
+        }
+    }
+    
+    /**
+     * Find nearest point on street grid
+     */
+    function findNearestGridPoint(lng, lat) {
+        if (streetGrid.length === 0) return null;
+        
+        let nearestDist = Infinity;
+        let nearestPoint = null;
+        let nearestDirection = null;
+        
+        for (let street of streetGrid) {
+            for (let i = 0; i < street.length - 1; i++) {
+                const p1 = street[i];
+                const p2 = street[i + 1];
+                
+                const closest = closestPointOnSegment(lng, lat, p1[0], p1[1], p2[0], p2[1]);
+                const dist = Math.sqrt(
+                    Math.pow(lng - closest.lng, 2) + 
+                    Math.pow(lat - closest.lat, 2)
+                );
+                
+                if (dist < nearestDist) {
+                    nearestDist = dist;
+                    nearestPoint = closest;
+                    nearestDirection = Math.atan2(p2[1] - p1[1], p2[0] - p1[0]);
+                }
+            }
+        }
+        
+        return nearestDist < config.gridAttractionDistance ? 
+            { point: nearestPoint, direction: nearestDirection, distance: nearestDist } : 
+            null;
+    }
+    
+    /**
+     * Find closest point on a line segment
+     */
+    function closestPointOnSegment(px, py, x1, y1, x2, y2) {
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const lengthSquared = dx * dx + dy * dy;
+        
+        if (lengthSquared === 0) {
+            return { lng: x1, lat: y1 };
+        }
+        
+        let t = ((px - x1) * dx + (py - y1) * dy) / lengthSquared;
+        t = Math.max(0, Math.min(1, t));
+        
+        return {
+            lng: x1 + t * dx,
+            lat: y1 + t * dy
+        };
+    }
+    
+    // ===== END GRID FUNCTIONS =====
+    
+    // ===== ZONE-BASED DISTRIBUTION =====
+    
+    function createGeographicZones(bounds, numZones) {
+        const zones = [];
+        const latRange = bounds.maxLat - bounds.minLat;
+        const lngRange = bounds.maxLng - bounds.minLng;
+        
+        const cols = Math.ceil(Math.sqrt(numZones));
+        const rows = Math.ceil(numZones / cols);
+        
+        const latStep = latRange / rows;
+        const lngStep = lngRange / cols;
+        
+        let zoneId = 0;
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                if (zoneId >= numZones) break;
+                
+                const zone = {
+                    id: zoneId++,
+                    bounds: {
+                        minLat: bounds.minLat + row * latStep,
+                        maxLat: bounds.minLat + (row + 1) * latStep,
+                        minLng: bounds.minLng + col * lngStep,
+                        maxLng: bounds.minLng + (col + 1) * lngStep
+                    },
+                    seeds: [],
+                    activeTipCount: 0,
+                    totalGrowth: 0, // Track total growth in zone
+                    competitiveness: 0.8 + Math.random() * 0.4 // 0.8-1.2 variation
+                };
+                zones.push(zone);
+            }
+        }
+        
+        console.log(`🗺️ Created ${zones.length} zones with varying competitiveness`);
+        return zones;
+    }
+    
+    function distributeTreesToZones(trees, zones, seedsPerZone) {
+        trees.forEach(tree => {
+            const lat = parseFloat(tree.latitude);
+            const lng = parseFloat(tree.longitude);
+            
+            if (isNaN(lat) || isNaN(lng)) return;
+            
+            for (let zone of zones) {
+                if (lat >= zone.bounds.minLat && lat < zone.bounds.maxLat &&
+                    lng >= zone.bounds.minLng && lng < zone.bounds.maxLng) {
+                    
+                    if (!zone.trees) zone.trees = [];
+                    zone.trees.push({ lat, lng, tree });
+                    break;
+                }
+            }
+        });
+        
+        let totalSeeds = 0;
+        zones.forEach(zone => {
+            if (!zone.trees || zone.trees.length === 0) {
+                console.log(`⚠️ Zone ${zone.id}: no trees`);
+                return;
+            }
+            
+            // Spatial sampling within zone
+            const gridSize = Math.sqrt(zone.trees.length / seedsPerZone);
+            const subGrid = new Map();
+            
+            zone.trees.forEach(tree => {
+                const gridX = Math.floor((tree.lng - zone.bounds.minLng) / 
+                    ((zone.bounds.maxLng - zone.bounds.minLng) / gridSize));
+                const gridY = Math.floor((tree.lat - zone.bounds.minLat) / 
+                    ((zone.bounds.maxLat - zone.bounds.minLat) / gridSize));
+                const key = `${gridX},${gridY}`;
+                
+                if (!subGrid.has(key)) {
+                    subGrid.set(key, tree);
+                }
+            });
+            
+            zone.seeds = Array.from(subGrid.values()).slice(0, seedsPerZone);
+            totalSeeds += zone.seeds.length;
+            
+            console.log(`📍 Zone ${zone.id}: ${zone.trees.length} trees → ${zone.seeds.length} seeds (competitiveness: ${zone.competitiveness.toFixed(2)})`);
+        });
+        
+        console.log(`✅ Total seeds: ${totalSeeds}`);
+        return zones;
+    }
+    
+    // ===== DATA LOADING =====
+    
+    function loadTreeData() {
+        if (loadingTrees || treesLoaded) return;
+        
+        loadingTrees = true;
+        console.log('🌳 Loading tree data with hybrid distribution...');
+        
+        Promise.all([
+            fetch('https://data.cityofnewyork.us/resource/uvpi-gqnh.json?$limit=50000&$where=latitude IS NOT NULL AND longitude IS NOT NULL AND boroname=\'Manhattan\'')
+                .then(r => r.json()),
+            fetch('https://data.cityofnewyork.us/resource/tqmj-j8zm.geojson?boro_name=Manhattan')
+                .then(r => r.json()),
+            loadCompleteGrid() // Load the user's grid file
+        ])
+        .then(([treeData, boundaryData, gridData]) => {
+            console.log(`📥 Received ${treeData.length} trees`);
+            
+            if (boundaryData.features && boundaryData.features.length > 0) {
+                manhattanBoundary = boundaryData.features[0].geometry;
+                console.log('✅ Manhattan boundary ready');
+            }
+            
+            // Store street grid
+            streetGrid = gridData;
+            
+            const manhattanBounds = {
+                minLng: -74.02,
+                maxLng: -73.907,
+                minLat: 40.700,
+                maxLat: 40.882
+            };
+            
+            // Create zones
+            zones = createGeographicZones(manhattanBounds, config.numberOfZones);
+            zones = distributeTreesToZones(treeData, zones, config.seedsPerZone);
+            
+            // Create seed nodes with zone tracking
+            // FILTER OUT Central Park area to prevent clustering
+            const centralParkBounds = {
+                minLat: 40.764,
+                maxLat: 40.800,
+                minLng: -73.982,
+                maxLng: -73.949
+            };
+            
+            zones.forEach(zone => {
+                zone.seeds.forEach(seedData => {
+                    // Skip seeds in Central Park area
+                    if (seedData.lat >= centralParkBounds.minLat && 
+                        seedData.lat <= centralParkBounds.maxLat &&
+                        seedData.lng >= centralParkBounds.minLng && 
+                        seedData.lng <= centralParkBounds.maxLng) {
+                        console.log('Skipping seed in Central Park area');
+                        return;
+                    }
+                    
+                    const seed = new Node(seedData.lat, seedData.lng, null, true, zone.id);
+                    seed.descendantCount = 0;
+                    
+                    zone.seedNodes = zone.seedNodes || [];
+                    zone.seedNodes.push(seed);
+                    seeds.push(seed);
+                    nodes.push(seed);
+                });
+            });
+            
+            console.log(`✅ Created ${seeds.length} seeds across ${zones.length} zones`);
+            console.log(`🚀 Unlimited growth mode - networks will grow continuously!`);
+            
+            treesLoaded = true;
+            loadingTrees = false;
+            
+            draw();
+            setTimeout(() => startSimulation(), 500);
+        })
+        .catch(error => {
+            console.error('❌ Error loading data:', error);
+            loadingTrees = false;
+        });
+    }
+    
+    function isInsideManhattan(lng, lat) {
+        if (!manhattanBoundary) {
+            // Fallback with tighter bounds
+            return lat >= 40.705 && lat <= 40.877 &&
+                   lng >= -74.015 && lng <= -73.912;
+        }
+        
+        const point = [lng, lat];
+        let inside = false;
+        
+        if (manhattanBoundary.type === 'MultiPolygon') {
+            for (let polygon of manhattanBoundary.coordinates) {
+                if (pointInPolygon(point, polygon[0])) {
+                    inside = true;
+                    break;
+                }
+            }
+        } 
+        else if (manhattanBoundary.type === 'Polygon') {
+            inside = pointInPolygon(point, manhattanBoundary.coordinates[0]);
+        }
+        
+        if (!inside) return false;
+        
+        // Add buffer: Check if we're too close to boundary
+        const buffer = 0.0008; // ~90m buffer from edge
+        const testPoints = [
+            [lng + buffer, lat],
+            [lng - buffer, lat],
+            [lng, lat + buffer],
+            [lng, lat - buffer]
+        ];
+        
+        // If any nearby point is outside, we're too close
+        for (let testPoint of testPoints) {
+            let testInside = false;
+            
+            if (manhattanBoundary.type === 'MultiPolygon') {
+                for (let polygon of manhattanBoundary.coordinates) {
+                    if (pointInPolygon(testPoint, polygon[0])) {
+                        testInside = true;
+                        break;
+                    }
+                }
+            } else if (manhattanBoundary.type === 'Polygon') {
+                testInside = pointInPolygon(testPoint, manhattanBoundary.coordinates[0]);
+            }
+            
+            if (!testInside) {
+                return false; // Too close to edge
+            }
+        }
+        
+        return true;
+    }
+    
+    function pointInPolygon(point, polygon) {
+        const x = point[0], y = point[1];
+        let inside = false;
+        
+        for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+            const xi = polygon[i][0], yi = polygon[i][1];
+            const xj = polygon[j][0], yj = polygon[j][1];
+            
+            const intersect = ((yi > y) !== (yj > y))
+                && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+            
+            if (intersect) inside = !inside;
+        }
+        
+        return inside;
+    }
+    
+    // ===== NODE & TIP CLASSES =====
+    
     class Node {
-        constructor(lat, lng, parent = null, isSeed = false) {
+        constructor(lat, lng, parent = null, isSeed = false, zoneId = null) {
             this.lat = lat;
             this.lng = lng;
             this.parent = parent;
@@ -98,7 +581,8 @@ function initMyceliumSimulation(treeMap) {
             this.isSeed = isSeed;
             this.thickness = isSeed ? 3 : 1;
             this.flow = 0;
-            this.age = 0;
+            this.zoneId = zoneId !== null ? zoneId : (parent ? parent.zoneId : null);
+            this.rootSeed = isSeed ? this : (parent ? parent.rootSeed : null);
             
             if (parent) {
                 parent.children.push(this);
@@ -106,9 +590,7 @@ function initMyceliumSimulation(treeMap) {
         }
         
         getPixel() {
-            // Convert lat/lng to screen pixels using MapLibre/Mapbox
-            const point = treeMap.project([this.lng, this.lat]);
-            return point;
+            return map.project([this.lng, this.lat]);
         }
         
         distance(other) {
@@ -117,57 +599,169 @@ function initMyceliumSimulation(treeMap) {
             return Math.sqrt(dlat * dlat + dlng * dlng);
         }
     }
-
-    // ===== ACTIVE TIP CLASS =====
+    
     class ActiveTip {
-        constructor(node) {
+        constructor(node, direction = null) {
             this.node = node;
-            this.direction = Math.random() * Math.PI * 2;
-            this.energy = 1.0;
+            this.direction = direction !== null ? direction : Math.random() * Math.PI * 2;
+            this.stepsSinceDirectionChange = 0;
+            this.zoneId = node.zoneId;
+            this.rootSeed = node.rootSeed;
         }
         
         step() {
-            // DLA component: random walk
-            if (config.useDLA) {
-                this.direction += (Math.random() - 0.5) * 0.5;
+            // REMOVED: Growth cap check - growth is now unlimited!
+            
+            // GRID FOLLOWING BEHAVIOR (if grid is loaded)
+            if (config.useGridFollowing && streetGrid.length > 0) {
+                const gridInfo = findNearestGridPoint(this.node.lng, this.node.lat);
+                
+                if (gridInfo) {
+                    // Pull toward grid line and align with street direction
+                    const angleToGrid = Math.atan2(
+                        gridInfo.point.lat - this.node.lat,
+                        gridInfo.point.lng - this.node.lng
+                    );
+                    
+                    // Blend with grid direction
+                    this.direction = this.direction * (1 - config.gridAttractionStrength) + 
+                                    gridInfo.direction * config.gridAttractionStrength;
+                    
+                    // Also pull toward the grid line itself if not on it yet
+                    if (gridInfo.distance > 0.0003) {
+                        this.direction = this.direction * 0.7 + angleToGrid * 0.3;
+                    }
+                    
+                    // Chance to branch radially OFF the grid
+                    if (gridInfo.distance < 0.0002 && Math.random() < config.gridBranchProbability) {
+                        const radialDirection = this.direction + (Math.random() < 0.5 ? 1 : -1) * Math.PI / 2;
+                        const radialTip = new ActiveTip(this.node, radialDirection);
+                        
+                        return [new ActiveTip(this.node, this.direction), radialTip];
+                    }
+                }
             }
             
-            // Hyphae component: avoid crowding
+            // RADIAL BIAS: Encourage outward growth from seed center
+            if (config.radialBias && this.rootSeed) {
+                const angleFromSeed = Math.atan2(
+                    this.node.lat - this.rootSeed.lat,
+                    this.node.lng - this.rootSeed.lng
+                );
+                
+                // Blend current direction with radial direction
+                this.direction = this.direction * (1 - config.radialBias) + 
+                                angleFromSeed * config.radialBias;
+            }
+            
+            if (config.useDLA) {
+                this.stepsSinceDirectionChange++;
+                
+                // Less frequent direction changes for more radial growth
+                if (this.stepsSinceDirectionChange > 8 || Math.random() < config.directionChangeRate) {
+                    this.direction += (Math.random() - 0.5) * 0.8; // REDUCED from 1.2 - smaller random changes
+                    this.stepsSinceDirectionChange = 0;
+                }
+            }
+            
+            // NEW: ATTRACTION TO OTHER NETWORKS
+            if (config.useAttraction) {
+                // Find nearby nodes from OTHER seeds/zones
+                const nearbyOtherNetworks = nodes.filter(n => {
+                    if (n === this.node || n === this.rootSeed) return false;
+                    
+                    // If attracting to other zones only, check zone ID
+                    if (config.attractionToOtherZones && n.zoneId === this.zoneId) return false;
+                    
+                    // Otherwise, just check if it's from a different seed
+                    if (n.rootSeed === this.rootSeed) return false;
+                    
+                    const dist = this.node.distance(n);
+                    return dist < config.attractionDistance && dist > config.avoidanceDistance;
+                });
+                
+                if (nearbyOtherNetworks.length > 0) {
+                    // Calculate average direction toward other networks
+                    const avgLat = nearbyOtherNetworks.reduce((s, n) => s + n.lat, 0) / nearbyOtherNetworks.length;
+                    const avgLng = nearbyOtherNetworks.reduce((s, n) => s + n.lng, 0) / nearbyOtherNetworks.length;
+                    
+                    // Only apply attraction if target is within Manhattan
+                    if (isInsideManhattan(avgLng, avgLat)) {
+                        const attractionAngle = Math.atan2(
+                            avgLat - this.node.lat,
+                            avgLng - this.node.lng
+                        );
+                        
+                        // Blend current direction with attraction angle
+                        this.direction = this.direction * (1 - config.attractionStrength) + 
+                                        attractionAngle * config.attractionStrength;
+                    }
+                }
+            }
+            
             if (config.useAvoidance) {
-                const nearby = nodes.filter(n => 
+                // Only avoid nodes from the SAME network (same rootSeed)
+                const nearby = nodes.filter(n =>
+                    n.rootSeed === this.rootSeed &&
                     this.node.distance(n) < config.avoidanceDistance
                 );
                 
-                if (nearby.length > 5) {
-                    // Turn away from crowded areas
+                if (nearby.length > 6) {
                     const avgLat = nearby.reduce((s, n) => s + n.lat, 0) / nearby.length;
                     const avgLng = nearby.reduce((s, n) => s + n.lng, 0) / nearby.length;
                     const awayAngle = Math.atan2(
                         this.node.lat - avgLat,
                         this.node.lng - avgLng
                     );
-                    this.direction = this.direction * 0.7 + awayAngle * 0.3;
+                    this.direction = this.direction * 0.5 + awayAngle * 0.5;
                 }
             }
             
-            // Move forward
             const newLat = this.node.lat + Math.sin(this.direction) * config.stepSize;
             const newLng = this.node.lng + Math.cos(this.direction) * config.stepSize;
             
-            // Check if too far from network
-            const nearestDist = Math.min(...nodes.map(n => 
-                Math.sqrt((newLat - n.lat)**2 + (newLng - n.lng)**2)
-            ));
-            
-            if (nearestDist > config.killDistance) {
-                return null; // Kill this tip
+            // CRITICAL: Check Manhattan boundary FIRST before any other checks
+            if (!isInsideManhattan(newLng, newLat)) {
+                return null; // Kill tip immediately if outside Manhattan
             }
             
-            // Create new node
+            // HYBRID KILL DISTANCE: Blend network and seed-based approaches
+            if (config.useHybridKillDistance && this.rootSeed) {
+                const distFromSeed = Math.sqrt(
+                    (newLat - this.rootSeed.lat)**2 + 
+                    (newLng - this.rootSeed.lng)**2
+                );
+                
+                const nearestNodeDist = Math.min(...nodes.map(n =>
+                    Math.sqrt((newLat - n.lat)**2 + (newLng - n.lng)**2)
+                ));
+                
+                // Weighted combination of both distances
+                const hybridDist = 
+                    distFromSeed * (1 - config.networkKillWeight) + 
+                    nearestNodeDist * config.networkKillWeight;
+                
+                if (hybridDist > config.killDistance) {
+                    return null;
+                }
+            }
+            
+            // Double-check boundary before creating node (safety check)
+            if (!isInsideManhattan(newLng, newLat)) {
+                return null;
+            }
+            
             const newNode = new Node(newLat, newLng, this.node, false);
             nodes.push(newNode);
             
-            // Update flow (Physarum component)
+            if (this.rootSeed) {
+                this.rootSeed.descendantCount++;
+            }
+            
+            if (this.zoneId !== null && zones[this.zoneId]) {
+                zones[this.zoneId].totalGrowth++;
+            }
+            
             if (config.useReinforcement) {
                 let current = newNode;
                 while (current.parent) {
@@ -177,67 +771,108 @@ function initMyceliumSimulation(treeMap) {
                 }
             }
             
-            // Branching
             if (Math.random() < config.branchProbability) {
-                const branchTip = new ActiveTip(newNode);
-                branchTip.direction = this.direction + (Math.random() < 0.5 ? 1 : -1) * config.branchAngle;
-                return [new ActiveTip(newNode), branchTip];
+                const branchAngleVariation = (Math.random() - 0.5) * config.branchAngle;
+                const branchDirection = this.direction + (Math.random() < 0.5 ? 1 : -1) * (config.branchAngle + branchAngleVariation);
+                
+                const branchTip = new ActiveTip(newNode, branchDirection);
+                return [new ActiveTip(newNode, this.direction), branchTip];
             }
             
-            return new ActiveTip(newNode);
+            return new ActiveTip(newNode, this.direction);
         }
     }
-
-    // ===== SIMULATION FUNCTIONS =====
+    
+    // ===== SIMULATION LOGIC =====
+    
     function spawnInitialTips() {
         activeTips = [];
-        seeds.forEach(seed => {
-            for (let i = 0; i < 3; i++) {
-                activeTips.push(new ActiveTip(seed));
-            }
+        
+        zones.forEach(zone => {
+            if (!zone.seedNodes || zone.seedNodes.length === 0) return;
+            
+            // Spawn tips radially from each seed for better circular growth
+            zone.seedNodes.forEach(seed => {
+                // Spawn 4 tips in cardinal directions for radial pattern
+                const directions = [0, Math.PI/2, Math.PI, 3*Math.PI/2]; // N, E, S, W
+                directions.forEach(baseDirection => {
+                    const direction = baseDirection + (Math.random() - 0.5) * 0.5; // Slight randomness
+                    const tip = new ActiveTip(seed, direction);
+                    activeTips.push(tip);
+                });
+            });
+            
+            zone.activeTipCount = zone.seedNodes.length * 4;
         });
+        
+        console.log(`🌱 Spawned ${activeTips.length} radial tips with zone-based variation`);
     }
-
+    
     function simulationStep() {
         if (!isRunning || seeds.length === 0) return;
         
         for (let step = 0; step < config.stepsPerFrame; step++) {
             const newTips = [];
             
-            // Process each active tip
+            // Update zone statistics
+            zones.forEach(z => z.activeTipCount = 0);
+            activeTips.forEach(tip => {
+                if (tip.zoneId !== null && zones[tip.zoneId]) {
+                    zones[tip.zoneId].activeTipCount++;
+                }
+            });
+            
             for (let i = activeTips.length - 1; i >= 0; i--) {
                 const result = activeTips[i].step();
                 
                 if (result === null) {
-                    // Tip died
                     activeTips.splice(i, 1);
                 } else if (Array.isArray(result)) {
-                    // Tip branched
                     activeTips.splice(i, 1);
                     newTips.push(...result);
                 } else {
-                    // Tip continued
                     activeTips[i] = result;
                 }
             }
             
             activeTips.push(...newTips);
             
-            // Limit active tips
             if (activeTips.length > config.maxActiveTips) {
                 activeTips = activeTips.slice(0, config.maxActiveTips);
             }
             
-            // Spawn new tips if needed
-            while (activeTips.length < Math.min(config.maxActiveTips / 2, 20) && nodes.length > 0) {
-                const randomNode = nodes[Math.floor(Math.random() * Math.min(50, nodes.length))];
-                activeTips.push(new ActiveTip(randomNode));
+            // BALANCED SPAWNING with zone awareness
+            if (config.allowZoneCompetition) {
+                // Calculate zone pressure based on growth
+                const avgZoneGrowth = zones.reduce((s, z) => s + z.totalGrowth, 0) / zones.length;
+                
+                zones.forEach(zone => {
+                    if (!zone.seedNodes || zone.seedNodes.length === 0) return;
+                    
+                    // Zones with less growth get boost
+                    const growthRatio = avgZoneGrowth > 0 ? zone.totalGrowth / avgZoneGrowth : 1;
+                    const targetTips = config.tipsPerZone * zone.competitiveness;
+                    const pressure = (1 - growthRatio) * config.competitionPressure;
+                    const adjustedTarget = targetTips * (1 + pressure);
+                    
+                    const deficit = Math.floor(adjustedTarget - zone.activeTipCount);
+                    
+                    if (deficit > 0 && activeTips.length < config.maxActiveTips) {
+                        for (let i = 0; i < Math.min(deficit, 4); i++) {
+                            const zoneNodes = nodes.filter(n => n.zoneId === zone.id);
+                            if (zoneNodes.length > 0) {
+                                const randomNode = zoneNodes[Math.floor(Math.random() * Math.min(50, zoneNodes.length))];
+                                activeTips.push(new ActiveTip(randomNode));
+                                zone.activeTipCount++;
+                            }
+                        }
+                    }
+                });
             }
             
             iteration++;
         }
         
-        // Decay flows (Physarum pruning)
         if (config.useReinforcement && iteration % 50 === 0) {
             nodes.forEach(n => {
                 n.flow *= (1 - config.decayRate);
@@ -246,29 +881,38 @@ function initMyceliumSimulation(treeMap) {
         }
         
         draw();
-        updateStats();
         animationFrame = requestAnimationFrame(simulationStep);
     }
-
+    
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // Draw connections
         nodes.forEach(node => {
             if (!node.parent) return;
             
             const p1 = node.getPixel();
             const p2 = node.parent.getPixel();
             
-            // Check if points are on screen
             if (p1.x < 0 || p1.x > canvas.width || p1.y < 0 || p1.y > canvas.height) return;
             if (p2.x < 0 || p2.x > canvas.width || p2.y < 0 || p2.y > canvas.height) return;
             
-            // Gradient color based on flow
+            // GREEN to WHITE color gradient based on flow
             const flowIntensity = Math.min(1, node.flow / 2);
-            const hue = 280 - flowIntensity * 80; // Purple to pink
             
-            ctx.strokeStyle = `hsla(${hue}, 70%, ${50 + flowIntensity * 20}%, 0.6)`;
+            if (flowIntensity > 0.6) {
+                // High flow: White/Cyan color
+                const whiteness = (flowIntensity - 0.6) / 0.4; // 0 to 1
+                const r = 119 + (255 - 119) * whiteness;
+                const g = 192 + (255 - 192) * whiteness;
+                const b = 73 + (255 - 73) * whiteness;
+                ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${0.7 + whiteness * 0.2})`;
+            } else {
+                // Low to medium flow: Green shades
+                const hue = 120; // Green
+                const lightness = 45 + flowIntensity * 20;
+                ctx.strokeStyle = `hsla(${hue}, 70%, ${lightness}%, 0.7)`;
+            }
+            
             ctx.lineWidth = node.thickness;
             ctx.lineCap = 'round';
             
@@ -278,206 +922,30 @@ function initMyceliumSimulation(treeMap) {
             ctx.stroke();
         });
         
-        // Draw nodes
         nodes.forEach(node => {
-            const p = node.getPixel();
+            if (!node.isSeed) return;
             
-            // Check if on screen
+            const p = node.getPixel();
             if (p.x < 0 || p.x > canvas.width || p.y < 0 || p.y > canvas.height) return;
             
-            if (node.isSeed) {
-                // Seeds
-                ctx.fillStyle = 'rgba(147, 51, 234, 0.8)';
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-                ctx.fill();
-            } else {
-                // Regular nodes
-                ctx.fillStyle = 'rgba(236, 72, 153, 0.4)';
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
-                ctx.fill();
-            }
+            // Green seeds
+            ctx.fillStyle = 'rgba(119, 192, 73, 0.6)';
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+            ctx.fill();
         });
         
-        // Draw active tips
         activeTips.forEach(tip => {
             const p = tip.node.getPixel();
-            
             if (p.x < 0 || p.x > canvas.width || p.y < 0 || p.y > canvas.height) return;
             
-            ctx.fillStyle = 'rgba(96, 165, 250, 0.8)';
+            // Bright green-white tips
+            ctx.fillStyle = 'rgba(180, 230, 120, 0.6)';
             ctx.beginPath();
-            ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+            ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
             ctx.fill();
         });
     }
-
-    function updateStats() {
-        const nodeCountEl = document.getElementById('nodeCount');
-        const tipCountEl = document.getElementById('tipCount');
-        const lengthTotalEl = document.getElementById('lengthTotal');
-        const iterCountEl = document.getElementById('iterCount');
-        
-        if (nodeCountEl) nodeCountEl.textContent = nodes.length;
-        if (tipCountEl) tipCountEl.textContent = activeTips.length;
-        
-        // Calculate total length
-        let totalLength = 0;
-        nodes.forEach(n => {
-            if (n.parent) totalLength += n.distance(n.parent);
-        });
-        const lengthMeters = totalLength * 111000; // rough conversion
-        if (lengthTotalEl) lengthTotalEl.textContent = Math.round(lengthMeters) + 'm';
-        if (iterCountEl) iterCountEl.textContent = iteration;
-    }
-
-    // ===== EVENT HANDLERS =====
     
-    // Add seed points when clicking map
-    treeMap.on('click', (e) => {
-        if (isSeedMode) {
-            const seed = new Node(e.lngLat.lat, e.lngLat.lng, null, true);
-            seeds.push(seed);
-            nodes.push(seed);
-            canvas.classList.add('active');
-            draw();
-            updateStats();
-        }
-    });
-
-    // Toggle seed mode button
-    const toggleSeedBtn = document.getElementById('toggleSeedMode');
-    if (toggleSeedBtn) {
-        toggleSeedBtn.addEventListener('click', () => {
-            isSeedMode = !isSeedMode;
-            const indicator = document.getElementById('seedModeIndicator');
-            
-            if (isSeedMode) {
-                toggleSeedBtn.textContent = '🎯 Seed Mode: ON';
-                toggleSeedBtn.style.background = '#f59e0b';
-                if (indicator) indicator.classList.add('active');
-                // Change map cursor
-                mapContainer.style.cursor = 'crosshair';
-            } else {
-                toggleSeedBtn.textContent = 'Click to Add Seed Points';
-                toggleSeedBtn.style.background = '#6366f1';
-                if (indicator) indicator.classList.remove('active');
-                mapContainer.style.cursor = '';
-            }
-        });
-    }
-
-    // Start button
-    const startBtn = document.getElementById('startBtn');
-    if (startBtn) {
-        startBtn.addEventListener('click', () => {
-            if (seeds.length === 0) {
-                alert('Please add seed points first! Click "Click to Add Seed Points", then click on the map.');
-                return;
-            }
-            isRunning = true;
-            canvas.classList.add('active');
-            if (activeTips.length === 0) spawnInitialTips();
-            simulationStep();
-            startBtn.textContent = 'Growing...';
-            startBtn.style.background = '#059669';
-        });
-    }
-
-    // Pause button
-    const pauseBtn = document.getElementById('pauseBtn');
-    if (pauseBtn) {
-        pauseBtn.addEventListener('click', () => {
-            isRunning = false;
-            if (animationFrame) {
-                cancelAnimationFrame(animationFrame);
-                animationFrame = null;
-            }
-            if (startBtn) {
-                startBtn.textContent = 'Resume Growth';
-                startBtn.style.background = '#10b981';
-            }
-        });
-    }
-
-    // Clear button
-    const clearBtn = document.getElementById('clearBtn');
-    if (clearBtn) {
-        clearBtn.addEventListener('click', () => {
-            isRunning = false;
-            if (animationFrame) {
-                cancelAnimationFrame(animationFrame);
-                animationFrame = null;
-            }
-            seeds = [];
-            nodes = [];
-            activeTips = [];
-            iteration = 0;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            canvas.classList.remove('active');
-            updateStats();
-            if (startBtn) {
-                startBtn.textContent = 'Start Growth';
-                startBtn.style.background = '#10b981';
-            }
-        });
-    }
-
-    // Speed slider
-    const speedSlider = document.getElementById('speedSlider');
-    if (speedSlider) {
-        speedSlider.addEventListener('input', (e) => {
-            config.stepsPerFrame = parseInt(e.target.value);
-            const speedVal = document.getElementById('speedVal');
-            if (speedVal) speedVal.textContent = e.target.value;
-        });
-    }
-
-    // Branch probability slider
-    const branchSlider = document.getElementById('branchSlider');
-    if (branchSlider) {
-        branchSlider.addEventListener('input', (e) => {
-            config.branchProbability = parseInt(e.target.value) / 100;
-            const branchVal = document.getElementById('branchVal');
-            if (branchVal) branchVal.textContent = e.target.value + '%';
-        });
-    }
-
-    // Max tips slider
-    const tipsSlider = document.getElementById('tipsSlider');
-    if (tipsSlider) {
-        tipsSlider.addEventListener('input', (e) => {
-            config.maxActiveTips = parseInt(e.target.value);
-            const tipsVal = document.getElementById('tipsVal');
-            if (tipsVal) tipsVal.textContent = e.target.value;
-        });
-    }
-
-    // Algorithm checkboxes
-    const reinforcementCheck = document.getElementById('reinforcement');
-    if (reinforcementCheck) {
-        reinforcementCheck.addEventListener('change', (e) => {
-            config.useReinforcement = e.target.checked;
-        });
-    }
-
-    const avoidanceCheck = document.getElementById('avoidance');
-    if (avoidanceCheck) {
-        avoidanceCheck.addEventListener('change', (e) => {
-            config.useAvoidance = e.target.checked;
-        });
-    }
-
-    const dlaCheck = document.getElementById('dla');
-    if (dlaCheck) {
-        dlaCheck.addEventListener('change', (e) => {
-            config.useDLA = e.target.checked;
-        });
-    }
-
-    // Initialize stats
-    updateStats();
-    
-    console.log('Mycelium simulation initialized successfully');
-}
+    console.log('🍄 Ultra-growth mycelium with attraction & UNLIMITED growth loaded');
+})();

@@ -37,7 +37,7 @@ map.on('load', async () => {
             type: 'fill',
             source: 'british-grid',
             paint: {
-                'fill-color': '#8B4513',
+                'fill-color': '#8e6a50ff',
                 'fill-opacity': 0.4
             },
             layout: {
@@ -50,7 +50,7 @@ map.on('load', async () => {
             type: 'line',
             source: 'british-grid',
             paint: {
-                'line-color': '#654321',
+                'line-color': '#8e6a50ff',
                 'line-width': 2
             },
             layout: {
@@ -73,7 +73,7 @@ map.on('load', async () => {
             type: 'fill',
             source: 'grid-1811',
             paint: {
-                'fill-color': '#9d7d70ff',
+                'fill-color': '#928b88ff',
                 'fill-opacity': 0.4
             },
             layout: {
@@ -86,7 +86,7 @@ map.on('load', async () => {
             type: 'line',
             source: 'grid-1811',
             paint: {
-                'line-color': '#9d7d70ff',
+                'line-color': '#928b88ff',
                 'line-width': 1.5
             },
             layout: {
@@ -109,7 +109,7 @@ map.on('load', async () => {
             type: 'fill',
             source: 'grid-1840',
             paint: {
-                'fill-color': '#9d7d70ff',
+                'fill-color': '#928b88ff',
                 'fill-opacity': 0.4
             },
             layout: {
@@ -122,7 +122,7 @@ map.on('load', async () => {
             type: 'line',
             source: 'grid-1840',
             paint: {
-                'line-color': '#9d7d70ff',
+                'line-color': '#928b88ff',
                 'line-width': 1.5
             },
             layout: {
@@ -145,7 +145,7 @@ map.on('load', async () => {
             type: 'fill',
             source: 'grid-1870',
             paint: {
-                'fill-color': '#9d7d70ff',
+                'fill-color': '#928b88ff',
                 'fill-opacity': 0.4
             },
             layout: {
@@ -158,7 +158,7 @@ map.on('load', async () => {
             type: 'line',
             source: 'grid-1870',
             paint: {
-                'line-color': '#9d7d70ff',
+                'line-color': '#928b88ff',
                 'line-width': 1.5
             },
             layout: {
@@ -181,7 +181,7 @@ map.on('load', async () => {
             type: 'fill',
             source: 'grid-1900',
             paint: {
-                'fill-color': '#9d7d70ff',
+                'fill-color': '#928b88ff',
                 'fill-opacity': 0.4
             },
             layout: {
@@ -194,7 +194,7 @@ map.on('load', async () => {
             type: 'line',
             source: 'grid-1900',
             paint: {
-                'line-color': '#9d7d70ff',
+                'line-color': '#928b88ff',
                 'line-width': 1.5
             },
             layout: {
@@ -217,7 +217,7 @@ map.on('load', async () => {
             type: 'fill',
             source: 'complete-grid',
             paint: {
-                'fill-color': '#9d7d70ff',
+                'fill-color': '#928b88ff',
                 'fill-opacity': 0.3
             },
             layout: {
@@ -230,7 +230,7 @@ map.on('load', async () => {
             type: 'line',
             source: 'complete-grid',
             paint: {
-                'line-color': '#9d7d70ff',
+                'line-color': '#928b88ff',
                 'line-width': 1
             },
             layout: {
